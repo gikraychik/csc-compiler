@@ -1,0 +1,392 @@
+Terminals unused in grammar
+
+   REF
+   COLON
+   SEMICOLON
+   STRINGCONST
+   STRING
+   INTEGER
+   COMA
+   RETURN
+   WHILE
+   LOOP
+   POOL
+   READ
+   WRITE
+   LABEL
+   RECOPENBRACE
+   RECCLOSEBRACE
+   THEN
+   GOTO
+   OR
+   AND
+   NOT
+   NE
+   EQ
+   GE
+   LE
+   GT
+   LT
+   DIV
+   MUL
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: /* empty */
+    2        | commands
+
+    3 commands: commands command
+    4         | command
+
+    5 command: assign
+    6        | condition
+
+    7 assign: NAME ASSIGN expr
+
+    8 expr: expr ADD expr
+    9     | expr SUB expr
+   10     | NUMBER
+   11     | NAME
+
+   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
+   13          | IF OBRACE expr CBRACE BLOCK commands KCOLB
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+NUMBER (258) 10
+NAME (259) 7 11
+REF (260)
+COLON (261)
+SEMICOLON (262)
+STRINGCONST (263)
+STRING (264)
+INTEGER (265)
+COMA (266)
+RETURN (267)
+ASSIGN (268) 7
+IF (269) 12 13
+WHILE (270)
+LOOP (271)
+POOL (272)
+READ (273)
+WRITE (274)
+LABEL (275)
+RECOPENBRACE (276)
+RECCLOSEBRACE (277)
+BLOCK (278) 12 13
+KCOLB (279) 12 13
+THEN (280)
+ELSE (281) 12
+GOTO (282)
+OBRACE (283) 12 13
+CBRACE (284) 12 13
+OR (285)
+AND (286)
+NOT (287)
+NE (288)
+EQ (289)
+GE (290)
+LE (291)
+GT (292)
+LT (293)
+SUB (294) 9
+ADD (295) 8
+DIV (296)
+MUL (297)
+
+
+Nonterminals, with rules where they appear
+
+$accept (43)
+    on left: 0
+program (44)
+    on left: 1 2, on right: 0
+commands (45)
+    on left: 3 4, on right: 2 3 12 13
+command (46)
+    on left: 5 6, on right: 3 4
+assign (47)
+    on left: 7, on right: 5
+expr (48)
+    on left: 8 9 10 11, on right: 7 8 9 12 13
+condition (49)
+    on left: 12 13, on right: 6
+
+
+state 0
+
+    0 $accept: . program $end
+
+    NAME  shift, and go to state 1
+    IF    shift, and go to state 2
+
+    $default  reduce using rule 1 (program)
+
+    program    go to state 3
+    commands   go to state 4
+    command    go to state 5
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 1
+
+    7 assign: NAME . ASSIGN expr
+
+    ASSIGN  shift, and go to state 8
+
+
+state 2
+
+   12 condition: IF . OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
+   13          | IF . OBRACE expr CBRACE BLOCK commands KCOLB
+
+    OBRACE  shift, and go to state 9
+
+
+state 3
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 10
+
+
+state 4
+
+    2 program: commands .
+    3 commands: commands . command
+
+    NAME  shift, and go to state 1
+    IF    shift, and go to state 2
+
+    $default  reduce using rule 2 (program)
+
+    command    go to state 11
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 5
+
+    4 commands: command .
+
+    $default  reduce using rule 4 (commands)
+
+
+state 6
+
+    5 command: assign .
+
+    $default  reduce using rule 5 (command)
+
+
+state 7
+
+    6 command: condition .
+
+    $default  reduce using rule 6 (command)
+
+
+state 8
+
+    7 assign: NAME ASSIGN . expr
+
+    NUMBER  shift, and go to state 12
+    NAME    shift, and go to state 13
+
+    expr  go to state 14
+
+
+state 9
+
+   12 condition: IF OBRACE . expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
+   13          | IF OBRACE . expr CBRACE BLOCK commands KCOLB
+
+    NUMBER  shift, and go to state 12
+    NAME    shift, and go to state 13
+
+    expr  go to state 15
+
+
+state 10
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+state 11
+
+    3 commands: commands command .
+
+    $default  reduce using rule 3 (commands)
+
+
+state 12
+
+   10 expr: NUMBER .
+
+    $default  reduce using rule 10 (expr)
+
+
+state 13
+
+   11 expr: NAME .
+
+    $default  reduce using rule 11 (expr)
+
+
+state 14
+
+    7 assign: NAME ASSIGN expr .
+    8 expr: expr . ADD expr
+    9     | expr . SUB expr
+
+    SUB  shift, and go to state 16
+    ADD  shift, and go to state 17
+
+    $default  reduce using rule 7 (assign)
+
+
+state 15
+
+    8 expr: expr . ADD expr
+    9     | expr . SUB expr
+   12 condition: IF OBRACE expr . CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
+   13          | IF OBRACE expr . CBRACE BLOCK commands KCOLB
+
+    CBRACE  shift, and go to state 18
+    SUB     shift, and go to state 16
+    ADD     shift, and go to state 17
+
+
+state 16
+
+    9 expr: expr SUB . expr
+
+    NUMBER  shift, and go to state 12
+    NAME    shift, and go to state 13
+
+    expr  go to state 19
+
+
+state 17
+
+    8 expr: expr ADD . expr
+
+    NUMBER  shift, and go to state 12
+    NAME    shift, and go to state 13
+
+    expr  go to state 20
+
+
+state 18
+
+   12 condition: IF OBRACE expr CBRACE . BLOCK commands KCOLB ELSE BLOCK commands KCOLB
+   13          | IF OBRACE expr CBRACE . BLOCK commands KCOLB
+
+    BLOCK  shift, and go to state 21
+
+
+state 19
+
+    8 expr: expr . ADD expr
+    9     | expr . SUB expr
+    9     | expr SUB expr .
+
+    $default  reduce using rule 9 (expr)
+
+
+state 20
+
+    8 expr: expr . ADD expr
+    8     | expr ADD expr .
+    9     | expr . SUB expr
+
+    $default  reduce using rule 8 (expr)
+
+
+state 21
+
+   12 condition: IF OBRACE expr CBRACE BLOCK . commands KCOLB ELSE BLOCK commands KCOLB
+   13          | IF OBRACE expr CBRACE BLOCK . commands KCOLB
+
+    NAME  shift, and go to state 1
+    IF    shift, and go to state 2
+
+    commands   go to state 22
+    command    go to state 5
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 22
+
+    3 commands: commands . command
+   12 condition: IF OBRACE expr CBRACE BLOCK commands . KCOLB ELSE BLOCK commands KCOLB
+   13          | IF OBRACE expr CBRACE BLOCK commands . KCOLB
+
+    NAME   shift, and go to state 1
+    IF     shift, and go to state 2
+    KCOLB  shift, and go to state 23
+
+    command    go to state 11
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 23
+
+   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB . ELSE BLOCK commands KCOLB
+   13          | IF OBRACE expr CBRACE BLOCK commands KCOLB .
+
+    ELSE  shift, and go to state 24
+
+    $default  reduce using rule 13 (condition)
+
+
+state 24
+
+   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE . BLOCK commands KCOLB
+
+    BLOCK  shift, and go to state 25
+
+
+state 25
+
+   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK . commands KCOLB
+
+    NAME  shift, and go to state 1
+    IF    shift, and go to state 2
+
+    commands   go to state 26
+    command    go to state 5
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 26
+
+    3 commands: commands . command
+   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands . KCOLB
+
+    NAME   shift, and go to state 1
+    IF     shift, and go to state 2
+    KCOLB  shift, and go to state 27
+
+    command    go to state 11
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 27
+
+   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB .
+
+    $default  reduce using rule 12 (condition)
