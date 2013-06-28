@@ -19,22 +19,15 @@ WSN [ \t\n]*
 <INITIAL>
 {
 	{DIGIT}+{WSN}				{ yylval.number = atoi(yytext); return NUMBER; }
-	{QUOTE}{STRINGCONST}{QUOTE}{WSN}	{ yylval.string = strdup(yytext); return STRINGCONST; }
 	"if"{WS}				{ return IF; }	
-	"==>"{WS}				{ return THEN; }
-	"!=>"{WS}				{ return ELSE; }
-	"while"{WS}				{ return WHILE; }
-	"loop"{WS}				{ return LOOP; }
-	"pool"{WS}				{ return POOL; }
-	"{"{WS}					{ return BLOCK; }
-	"}"{WS}					{ return KCOLB; }
+	"else"{WS}				{ return ELSE; }
+	"{"{WS}					{ return OBLOCK; }
+	"}"{WS}					{ return CBLOCK; }
 	"goto"{WS}				{ return GOTO; }
-	"write"{WSN}/"("			{ return WRITE; }
-	"read"{WSN}/"("				{ return READ; }
-	"string"{WSN}				{ return STRING; }
+	"print"{WSN}/"("			{ return WRITE; }
 	"int"{WSN}				{ /*printf("INTEGER");*/ return INTEGER; }
 	"label"{WS}				{ return LABEL; }
-	"return"{WS}				{ return RETURN; }
+	"global"{WS}				{ return GLOBAL; }
 	"["{WSN}				{ return RECOPENBRACE; }
 	"]"{WSN}				{ return RECCLOSEBRACE; }
 	"<"{WSN}				{ return LT; }
@@ -50,7 +43,6 @@ WSN [ \t\n]*
 	"-"{WSN}				{ return SUB; }
 	"*"{WSN}				{ return MUL; }
 	"/"{WSN}				{ return DIV; }		
-	"->"{WSN}				{ return REF; }
 	"="{WSN}				{ /*printf("ASSIGN");*/ return ASSIGN; }
 	","{WSN}				{ /*printf("COMA");*/ return COMA; }
 	":"{WSN}				{ /*printf("COLON");*/ return COLON; }

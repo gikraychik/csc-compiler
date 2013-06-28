@@ -54,29 +54,31 @@
      POOL = 272,
      READ = 273,
      WRITE = 274,
-     LABEL = 275,
-     RECOPENBRACE = 276,
-     RECCLOSEBRACE = 277,
-     BLOCK = 278,
-     KCOLB = 279,
-     THEN = 280,
-     ELSE = 281,
-     GOTO = 282,
-     OBRACE = 283,
-     CBRACE = 284,
-     OR = 285,
-     AND = 286,
-     NOT = 287,
-     NE = 288,
-     EQ = 289,
-     GE = 290,
-     LE = 291,
-     GT = 292,
-     LT = 293,
-     SUB = 294,
-     ADD = 295,
-     DIV = 296,
-     MUL = 297
+     NEQ = 275,
+     LABEL = 276,
+     RECOPENBRACE = 277,
+     RECCLOSEBRACE = 278,
+     OBLOCK = 279,
+     CBLOCK = 280,
+     THEN = 281,
+     ELSE = 282,
+     GOTO = 283,
+     OBRACE = 284,
+     CBRACE = 285,
+     GLOBAL = 286,
+     AND = 287,
+     OR = 288,
+     NOT = 289,
+     LT = 290,
+     GT = 291,
+     LE = 292,
+     GE = 293,
+     EQ = 294,
+     NE = 295,
+     ADD = 296,
+     SUB = 297,
+     MUL = 298,
+     DIV = 299
    };
 #endif
 
@@ -87,7 +89,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 41 "analis.y"
+#line 171 "analis.y"
 
 	int number;
 	char *string;
@@ -95,7 +97,7 @@ typedef union YYSTYPE
 
 
 /* Line 2068 of yacc.c  */
-#line 99 "analis.tab.h"
+#line 101 "analis.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

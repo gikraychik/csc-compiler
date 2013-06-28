@@ -18,17 +18,8 @@ Terminals unused in grammar
    RECCLOSEBRACE
    THEN
    GOTO
-   OR
-   AND
-   NOT
+   GLOBAL
    NE
-   EQ
-   GE
-   LE
-   GT
-   LT
-   DIV
-   MUL
 
 
 Grammar
@@ -46,21 +37,48 @@ Grammar
 
     7 assign: NAME ASSIGN expr
 
-    8 expr: expr ADD expr
-    9     | expr SUB expr
-   10     | NUMBER
-   11     | NAME
+    8 expr: int_expr
 
-   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
-   13          | IF OBRACE expr CBRACE BLOCK commands KCOLB
+    9 int_expr: int_expr OR term1
+   10         | term1
+
+   11 term1: term1 AND term2
+   12      | term2
+
+   13 term2: term2 EQ term3
+   14      | term2 NEQ term3
+   15      | term3
+
+   16 term3: term3 LT term4
+   17      | term3 LE term4
+   18      | term3 GT term4
+   19      | term3 GE term4
+   20      | term4
+
+   21 term4: term4 ADD term5
+   22      | term4 SUB term5
+   23      | term5
+
+   24 term5: term5 MUL term6
+   25      | term5 DIV term6
+   26      | term6
+
+   27 term6: NOT term7
+
+   28 term7: NUMBER
+   29      | NAME
+   30      | OBRACE expr CBRACE
+
+   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   32          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-NUMBER (258) 10
-NAME (259) 7 11
+NUMBER (258) 28
+NAME (259) 7 29
 REF (260)
 COLON (261)
 SEMICOLON (262)
@@ -70,53 +88,71 @@ INTEGER (265)
 COMA (266)
 RETURN (267)
 ASSIGN (268) 7
-IF (269) 12 13
+IF (269) 31 32
 WHILE (270)
 LOOP (271)
 POOL (272)
 READ (273)
 WRITE (274)
-LABEL (275)
-RECOPENBRACE (276)
-RECCLOSEBRACE (277)
-BLOCK (278) 12 13
-KCOLB (279) 12 13
-THEN (280)
-ELSE (281) 12
-GOTO (282)
-OBRACE (283) 12 13
-CBRACE (284) 12 13
-OR (285)
-AND (286)
-NOT (287)
-NE (288)
-EQ (289)
-GE (290)
-LE (291)
-GT (292)
-LT (293)
-SUB (294) 9
-ADD (295) 8
-DIV (296)
-MUL (297)
+NEQ (275) 14
+LABEL (276)
+RECOPENBRACE (277)
+RECCLOSEBRACE (278)
+OBLOCK (279) 31 32
+CBLOCK (280) 31 32
+THEN (281)
+ELSE (282) 31
+GOTO (283)
+OBRACE (284) 30 31 32
+CBRACE (285) 30 31 32
+GLOBAL (286)
+AND (287) 11
+OR (288) 9
+NOT (289) 27
+LT (290) 16
+GT (291) 18
+LE (292) 17
+GE (293) 19
+EQ (294) 13
+NE (295)
+ADD (296) 21
+SUB (297) 22
+MUL (298) 24
+DIV (299) 25
 
 
 Nonterminals, with rules where they appear
 
-$accept (43)
+$accept (45)
     on left: 0
-program (44)
+program (46)
     on left: 1 2, on right: 0
-commands (45)
-    on left: 3 4, on right: 2 3 12 13
-command (46)
+commands (47)
+    on left: 3 4, on right: 2 3 31 32
+command (48)
     on left: 5 6, on right: 3 4
-assign (47)
+assign (49)
     on left: 7, on right: 5
-expr (48)
-    on left: 8 9 10 11, on right: 7 8 9 12 13
-condition (49)
-    on left: 12 13, on right: 6
+expr (50)
+    on left: 8, on right: 7 30 31 32
+int_expr (51)
+    on left: 9 10, on right: 8 9
+term1 (52)
+    on left: 11 12, on right: 9 10 11
+term2 (53)
+    on left: 13 14 15, on right: 11 12 13 14
+term3 (54)
+    on left: 16 17 18 19 20, on right: 13 14 15 16 17 18 19
+term4 (55)
+    on left: 21 22 23, on right: 16 17 18 19 20 21 22
+term5 (56)
+    on left: 24 25 26, on right: 21 22 23 24 25
+term6 (57)
+    on left: 27, on right: 24 25 26
+term7 (58)
+    on left: 28 29 30, on right: 27
+condition (59)
+    on left: 31 32, on right: 6
 
 
 state 0
@@ -144,8 +180,8 @@ state 1
 
 state 2
 
-   12 condition: IF . OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
-   13          | IF . OBRACE expr CBRACE BLOCK commands KCOLB
+   31 condition: IF . OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   32          | IF . OBRACE expr CBRACE OBLOCK commands CBLOCK
 
     OBRACE  shift, and go to state 9
 
@@ -197,21 +233,33 @@ state 8
 
     7 assign: NAME ASSIGN . expr
 
-    NUMBER  shift, and go to state 12
-    NAME    shift, and go to state 13
+    NOT  shift, and go to state 12
 
-    expr  go to state 14
+    expr      go to state 13
+    int_expr  go to state 14
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term5     go to state 19
+    term6     go to state 20
 
 
 state 9
 
-   12 condition: IF OBRACE . expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
-   13          | IF OBRACE . expr CBRACE BLOCK commands KCOLB
+   31 condition: IF OBRACE . expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   32          | IF OBRACE . expr CBRACE OBLOCK commands CBLOCK
 
-    NUMBER  shift, and go to state 12
-    NAME    shift, and go to state 13
+    NOT  shift, and go to state 12
 
-    expr  go to state 15
+    expr      go to state 21
+    int_expr  go to state 14
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term5     go to state 19
+    term6     go to state 20
 
 
 state 10
@@ -230,163 +278,516 @@ state 11
 
 state 12
 
-   10 expr: NUMBER .
+   27 term6: NOT . term7
 
-    $default  reduce using rule 10 (expr)
+    NUMBER  shift, and go to state 22
+    NAME    shift, and go to state 23
+    OBRACE  shift, and go to state 24
+
+    term7  go to state 25
 
 
 state 13
 
-   11 expr: NAME .
-
-    $default  reduce using rule 11 (expr)
-
-
-state 14
-
     7 assign: NAME ASSIGN expr .
-    8 expr: expr . ADD expr
-    9     | expr . SUB expr
-
-    SUB  shift, and go to state 16
-    ADD  shift, and go to state 17
 
     $default  reduce using rule 7 (assign)
 
 
-state 15
+state 14
 
-    8 expr: expr . ADD expr
-    9     | expr . SUB expr
-   12 condition: IF OBRACE expr . CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB
-   13          | IF OBRACE expr . CBRACE BLOCK commands KCOLB
+    8 expr: int_expr .
+    9 int_expr: int_expr . OR term1
 
-    CBRACE  shift, and go to state 18
-    SUB     shift, and go to state 16
-    ADD     shift, and go to state 17
-
-
-state 16
-
-    9 expr: expr SUB . expr
-
-    NUMBER  shift, and go to state 12
-    NAME    shift, and go to state 13
-
-    expr  go to state 19
-
-
-state 17
-
-    8 expr: expr ADD . expr
-
-    NUMBER  shift, and go to state 12
-    NAME    shift, and go to state 13
-
-    expr  go to state 20
-
-
-state 18
-
-   12 condition: IF OBRACE expr CBRACE . BLOCK commands KCOLB ELSE BLOCK commands KCOLB
-   13          | IF OBRACE expr CBRACE . BLOCK commands KCOLB
-
-    BLOCK  shift, and go to state 21
-
-
-state 19
-
-    8 expr: expr . ADD expr
-    9     | expr . SUB expr
-    9     | expr SUB expr .
-
-    $default  reduce using rule 9 (expr)
-
-
-state 20
-
-    8 expr: expr . ADD expr
-    8     | expr ADD expr .
-    9     | expr . SUB expr
+    OR  shift, and go to state 26
 
     $default  reduce using rule 8 (expr)
 
 
+state 15
+
+   10 int_expr: term1 .
+   11 term1: term1 . AND term2
+
+    AND  shift, and go to state 27
+
+    $default  reduce using rule 10 (int_expr)
+
+
+state 16
+
+   12 term1: term2 .
+   13 term2: term2 . EQ term3
+   14      | term2 . NEQ term3
+
+    NEQ  shift, and go to state 28
+    EQ   shift, and go to state 29
+
+    $default  reduce using rule 12 (term1)
+
+
+state 17
+
+   15 term2: term3 .
+   16 term3: term3 . LT term4
+   17      | term3 . LE term4
+   18      | term3 . GT term4
+   19      | term3 . GE term4
+
+    LT  shift, and go to state 30
+    GT  shift, and go to state 31
+    LE  shift, and go to state 32
+    GE  shift, and go to state 33
+
+    $default  reduce using rule 15 (term2)
+
+
+state 18
+
+   20 term3: term4 .
+   21 term4: term4 . ADD term5
+   22      | term4 . SUB term5
+
+    ADD  shift, and go to state 34
+    SUB  shift, and go to state 35
+
+    $default  reduce using rule 20 (term3)
+
+
+state 19
+
+   23 term4: term5 .
+   24 term5: term5 . MUL term6
+   25      | term5 . DIV term6
+
+    MUL  shift, and go to state 36
+    DIV  shift, and go to state 37
+
+    $default  reduce using rule 23 (term4)
+
+
+state 20
+
+   26 term5: term6 .
+
+    $default  reduce using rule 26 (term5)
+
+
 state 21
 
-   12 condition: IF OBRACE expr CBRACE BLOCK . commands KCOLB ELSE BLOCK commands KCOLB
-   13          | IF OBRACE expr CBRACE BLOCK . commands KCOLB
+   31 condition: IF OBRACE expr . CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   32          | IF OBRACE expr . CBRACE OBLOCK commands CBLOCK
 
-    NAME  shift, and go to state 1
-    IF    shift, and go to state 2
-
-    commands   go to state 22
-    command    go to state 5
-    assign     go to state 6
-    condition  go to state 7
+    CBRACE  shift, and go to state 38
 
 
 state 22
 
-    3 commands: commands . command
-   12 condition: IF OBRACE expr CBRACE BLOCK commands . KCOLB ELSE BLOCK commands KCOLB
-   13          | IF OBRACE expr CBRACE BLOCK commands . KCOLB
+   28 term7: NUMBER .
 
-    NAME   shift, and go to state 1
-    IF     shift, and go to state 2
-    KCOLB  shift, and go to state 23
-
-    command    go to state 11
-    assign     go to state 6
-    condition  go to state 7
+    $default  reduce using rule 28 (term7)
 
 
 state 23
 
-   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB . ELSE BLOCK commands KCOLB
-   13          | IF OBRACE expr CBRACE BLOCK commands KCOLB .
+   29 term7: NAME .
 
-    ELSE  shift, and go to state 24
-
-    $default  reduce using rule 13 (condition)
+    $default  reduce using rule 29 (term7)
 
 
 state 24
 
-   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE . BLOCK commands KCOLB
+   30 term7: OBRACE . expr CBRACE
 
-    BLOCK  shift, and go to state 25
+    NOT  shift, and go to state 12
+
+    expr      go to state 39
+    int_expr  go to state 14
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term5     go to state 19
+    term6     go to state 20
 
 
 state 25
 
-   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK . commands KCOLB
+   27 term6: NOT term7 .
+
+    $default  reduce using rule 27 (term6)
+
+
+state 26
+
+    9 int_expr: int_expr OR . term1
+
+    NOT  shift, and go to state 12
+
+    term1  go to state 40
+    term2  go to state 16
+    term3  go to state 17
+    term4  go to state 18
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 27
+
+   11 term1: term1 AND . term2
+
+    NOT  shift, and go to state 12
+
+    term2  go to state 41
+    term3  go to state 17
+    term4  go to state 18
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 28
+
+   14 term2: term2 NEQ . term3
+
+    NOT  shift, and go to state 12
+
+    term3  go to state 42
+    term4  go to state 18
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 29
+
+   13 term2: term2 EQ . term3
+
+    NOT  shift, and go to state 12
+
+    term3  go to state 43
+    term4  go to state 18
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 30
+
+   16 term3: term3 LT . term4
+
+    NOT  shift, and go to state 12
+
+    term4  go to state 44
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 31
+
+   18 term3: term3 GT . term4
+
+    NOT  shift, and go to state 12
+
+    term4  go to state 45
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 32
+
+   17 term3: term3 LE . term4
+
+    NOT  shift, and go to state 12
+
+    term4  go to state 46
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 33
+
+   19 term3: term3 GE . term4
+
+    NOT  shift, and go to state 12
+
+    term4  go to state 47
+    term5  go to state 19
+    term6  go to state 20
+
+
+state 34
+
+   21 term4: term4 ADD . term5
+
+    NOT  shift, and go to state 12
+
+    term5  go to state 48
+    term6  go to state 20
+
+
+state 35
+
+   22 term4: term4 SUB . term5
+
+    NOT  shift, and go to state 12
+
+    term5  go to state 49
+    term6  go to state 20
+
+
+state 36
+
+   24 term5: term5 MUL . term6
+
+    NOT  shift, and go to state 12
+
+    term6  go to state 50
+
+
+state 37
+
+   25 term5: term5 DIV . term6
+
+    NOT  shift, and go to state 12
+
+    term6  go to state 51
+
+
+state 38
+
+   31 condition: IF OBRACE expr CBRACE . OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   32          | IF OBRACE expr CBRACE . OBLOCK commands CBLOCK
+
+    OBLOCK  shift, and go to state 52
+
+
+state 39
+
+   30 term7: OBRACE expr . CBRACE
+
+    CBRACE  shift, and go to state 53
+
+
+state 40
+
+    9 int_expr: int_expr OR term1 .
+   11 term1: term1 . AND term2
+
+    AND  shift, and go to state 27
+
+    $default  reduce using rule 9 (int_expr)
+
+
+state 41
+
+   11 term1: term1 AND term2 .
+   13 term2: term2 . EQ term3
+   14      | term2 . NEQ term3
+
+    NEQ  shift, and go to state 28
+    EQ   shift, and go to state 29
+
+    $default  reduce using rule 11 (term1)
+
+
+state 42
+
+   14 term2: term2 NEQ term3 .
+   16 term3: term3 . LT term4
+   17      | term3 . LE term4
+   18      | term3 . GT term4
+   19      | term3 . GE term4
+
+    LT  shift, and go to state 30
+    GT  shift, and go to state 31
+    LE  shift, and go to state 32
+    GE  shift, and go to state 33
+
+    $default  reduce using rule 14 (term2)
+
+
+state 43
+
+   13 term2: term2 EQ term3 .
+   16 term3: term3 . LT term4
+   17      | term3 . LE term4
+   18      | term3 . GT term4
+   19      | term3 . GE term4
+
+    LT  shift, and go to state 30
+    GT  shift, and go to state 31
+    LE  shift, and go to state 32
+    GE  shift, and go to state 33
+
+    $default  reduce using rule 13 (term2)
+
+
+state 44
+
+   16 term3: term3 LT term4 .
+   21 term4: term4 . ADD term5
+   22      | term4 . SUB term5
+
+    ADD  shift, and go to state 34
+    SUB  shift, and go to state 35
+
+    $default  reduce using rule 16 (term3)
+
+
+state 45
+
+   18 term3: term3 GT term4 .
+   21 term4: term4 . ADD term5
+   22      | term4 . SUB term5
+
+    ADD  shift, and go to state 34
+    SUB  shift, and go to state 35
+
+    $default  reduce using rule 18 (term3)
+
+
+state 46
+
+   17 term3: term3 LE term4 .
+   21 term4: term4 . ADD term5
+   22      | term4 . SUB term5
+
+    ADD  shift, and go to state 34
+    SUB  shift, and go to state 35
+
+    $default  reduce using rule 17 (term3)
+
+
+state 47
+
+   19 term3: term3 GE term4 .
+   21 term4: term4 . ADD term5
+   22      | term4 . SUB term5
+
+    ADD  shift, and go to state 34
+    SUB  shift, and go to state 35
+
+    $default  reduce using rule 19 (term3)
+
+
+state 48
+
+   21 term4: term4 ADD term5 .
+   24 term5: term5 . MUL term6
+   25      | term5 . DIV term6
+
+    MUL  shift, and go to state 36
+    DIV  shift, and go to state 37
+
+    $default  reduce using rule 21 (term4)
+
+
+state 49
+
+   22 term4: term4 SUB term5 .
+   24 term5: term5 . MUL term6
+   25      | term5 . DIV term6
+
+    MUL  shift, and go to state 36
+    DIV  shift, and go to state 37
+
+    $default  reduce using rule 22 (term4)
+
+
+state 50
+
+   24 term5: term5 MUL term6 .
+
+    $default  reduce using rule 24 (term5)
+
+
+state 51
+
+   25 term5: term5 DIV term6 .
+
+    $default  reduce using rule 25 (term5)
+
+
+state 52
+
+   31 condition: IF OBRACE expr CBRACE OBLOCK . commands CBLOCK ELSE OBLOCK commands CBLOCK
+   32          | IF OBRACE expr CBRACE OBLOCK . commands CBLOCK
 
     NAME  shift, and go to state 1
     IF    shift, and go to state 2
 
-    commands   go to state 26
+    commands   go to state 54
     command    go to state 5
     assign     go to state 6
     condition  go to state 7
 
 
-state 26
+state 53
+
+   30 term7: OBRACE expr CBRACE .
+
+    $default  reduce using rule 30 (term7)
+
+
+state 54
 
     3 commands: commands . command
-   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands . KCOLB
+   31 condition: IF OBRACE expr CBRACE OBLOCK commands . CBLOCK ELSE OBLOCK commands CBLOCK
+   32          | IF OBRACE expr CBRACE OBLOCK commands . CBLOCK
 
-    NAME   shift, and go to state 1
-    IF     shift, and go to state 2
-    KCOLB  shift, and go to state 27
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    CBLOCK  shift, and go to state 55
 
     command    go to state 11
     assign     go to state 6
     condition  go to state 7
 
 
-state 27
+state 55
 
-   12 condition: IF OBRACE expr CBRACE BLOCK commands KCOLB ELSE BLOCK commands KCOLB .
+   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK . ELSE OBLOCK commands CBLOCK
+   32          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK .
 
-    $default  reduce using rule 12 (condition)
+    ELSE  shift, and go to state 56
+
+    $default  reduce using rule 32 (condition)
+
+
+state 56
+
+   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE . OBLOCK commands CBLOCK
+
+    OBLOCK  shift, and go to state 57
+
+
+state 57
+
+   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK . commands CBLOCK
+
+    NAME  shift, and go to state 1
+    IF    shift, and go to state 2
+
+    commands   go to state 58
+    command    go to state 5
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 58
+
+    3 commands: commands . command
+   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands . CBLOCK
+
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    CBLOCK  shift, and go to state 59
+
+    command    go to state 11
+    assign     go to state 6
+    condition  go to state 7
+
+
+state 59
+
+   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK .
+
+    $default  reduce using rule 31 (condition)
