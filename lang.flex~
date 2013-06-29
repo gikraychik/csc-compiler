@@ -28,6 +28,9 @@ WSN [ \t\n]*
 	"int"{WSN}				{ /*printf("INTEGER");*/ return INTEGER; }
 	"label"{WS}				{ return LABEL; }
 	"global"{WS}				{ return GLOBAL; }
+	"define"{WS}				{ return DEFINE; }
+	"init"{WS}				{ return INIT; }
+	"as"{WS}				{ return AS; }
 	"["{WSN}				{ return RECOPENBRACE; }
 	"]"{WSN}				{ return RECCLOSEBRACE; }
 	"<"{WSN}				{ return LT; }

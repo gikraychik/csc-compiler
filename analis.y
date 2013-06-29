@@ -24,7 +24,9 @@ public:
 			case 1: cout << "Run out of memory" << endl; break;
 			case 2: cout << "Attempt to alloc memory for the second time; redeclaration of variable" << endl; break;
 			case 3: cout << "Memory::isFree: error: wrong int_name, it must have at least 1 digit in the end" << endl; break;
-			case 4: cout << "Memory::isFree: error: out of range" << endl;			
+			case 4: cout << "Memory::isFree: error: out of range" << endl;
+			case 5: cout << "Memory::free_mem: error: impossible to delete an undeclared variable" << endl; break;
+			case 6: cout << "Memory::free_cell: error: impossible to delete global variable" << endl; break;	
 			default: cout << "Unexpected error" << endl; break;
 		}
 	}
@@ -111,6 +113,15 @@ public:
 		free(str);
 		return res;
 	}
+	void free_mem(string &ext_name) throw(int)
+	{
+		if (names.find(ext_name) == names.end())  //not found
+		{
+			throw 5;
+		}
+		free_mem(ext_name);
+	}
+
 	void print()
 	{
 		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
@@ -145,6 +156,15 @@ private:
 		allocated[i] = 1;
 		return i;
 	}
+	void free_cell(string &ext_name) throw(int)
+	{
+		string int_name = names[ext_name];
+		int number = innerNameToNumber(int_name);
+		if (globals[number] == 1) { throw 6; }
+		allocated[number] = 0;
+		names.erase(ext_name);
+	}		
+
 	void reverse(char s[])
 	{
 	    int i, j;
@@ -284,7 +304,7 @@ int main()
 %token NUMBER NAME REF COLON SEMICOLON STRINGCONST STRING INTEGER COMA RETURN ASSIGN
 %token IF WHILE LOOP POOL READ WRITE NEQ
 %token LABEL RECOPENBRACE RECCLOSEBRACE
-%token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE
+%token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE DELETE
 %token GLOBAL DEFINE INIT AS
 
 %token AND OR
@@ -309,6 +329,7 @@ commands :	commands command
 command :	assign
 		| condition
 		| decl
+		| delete
 		;
 assign :	NAME ASSIGN expr
 		;
@@ -376,7 +397,12 @@ decl:		INIT NAME ASSIGN expr SEMICOLON
 		}
 		| DEFINE NAME AS NAME SEMICOLON
 		;
-
+delete:		DELETE NAME SEMICOLON
+		{
+			string ext_name = string($<string>2);                 // this block need to be tested
+			try { mem.free_mem(ext_name); }
+			catch (int e) { Error::error(e); }
+		}	
 condition :	IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
 		| IF OBRACE expr CBRACE OBLOCK commands CBLOCK
 		;
