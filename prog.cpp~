@@ -25,6 +25,6 @@ int main()
 	}
 	cout << res << endl;
 	int i = 0;
-	while (i++ < 10) { cout << i << " "; }
+	while (++i < 10) { cout << i << " "; }
 	return 0;
 }

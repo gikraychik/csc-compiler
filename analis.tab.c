@@ -83,6 +83,7 @@ using namespace std;
 
 class Error
 {
+public:
 	Error();
 	~Error();
 	static void error(int number)
@@ -90,6 +91,9 @@ class Error
 		switch (number)
 		{
 			case 1: cout << "Run out of memory" << endl; break;
+			case 2: cout << "Attempt to alloc memory for the second time; redeclaration of variable" << endl; break;
+			case 3: cout << "Memory::isFree: error: wrong int_name, it must have at least 1 digit in the end" << endl; break;
+			case 4: cout << "Memory::isFree: error: out of range" << endl;			
 			default: cout << "Unexpected error" << endl; break;
 		}
 	}
@@ -101,19 +105,59 @@ public:
 	{
 		cap = capacity;
 		allocated.resize(cap, 0);
+		globals.resize(cap, 0);
 	}
-	string &alloc(string &ext_name)
+	string &alloc(string &ext_name) throw(int)
 	{
 		if (names.find(ext_name) == names.end())  //not found
 		{
-			names[ext_name] = 
+			char *str = (char *)malloc(33*sizeof(char));
+			int x;
+			try
+			{
+				x = alloc_mem();
+			}
+			catch (int e)
+			{
+				free(str);
+				//some actions, if run out of memory
+			}
+			names[ext_name] = numberToInnerName(x);
+			free(str);
 		}
+		else { throw 2; }
+		return names[ext_name];
 	}
-	bool isFree(int number)
+	bool isFree(int number) throw(int)
 	{
-		return allocated.find(number) == allocated.end();
+		if ((number < 0) || (number >= cap)) { throw 4; }
+		return allocated[number] == 0;
 	}
-	bool isFree(string &int_name)
+	bool isFree(string &int_name) throw(int)
+	{
+		return isFree(innerNameToNumber(int_name));		
+	}
+	bool isGlobal(int number)
+	{
+		return globals[number] == 1;
+	}
+	void makeGlobal(int number)
+	{
+		globals[number] = 1;
+	}
+	void makeGlobal(string &int_name)
+	{
+		globals[innerNameToNumber(int_name)] = 1;
+	}
+	string getInnerName(string &ext_name)
+	{
+		if (names.find(ext_name) == names.end())  //not found
+		{
+			return string("");
+		}
+		return names[ext_name];
+	}
+	int innerNameToNumber(string &int_name)
 	{
 		const char *str = int_name.data();
 		char i = 0;
@@ -124,24 +168,78 @@ public:
 		}
 		if (str[i] == '\0')
 		{
-			//yyerror("Memory::isFree: error: wrong int_name, it must have at least 1 digit in the end");
+			throw(3);
 		}
 		int x = atoi(str+i);
-		return isFree(x);		
+		return x;
 	}
-
+	string numberToInnerName(int number)
+	{
+		char *str = (char *)malloc(33*sizeof(char));
+		string res = string("TMP") + string(itoa(number, str));
+		free(str);
+		return res;
+	}
+	void print()
+	{
+		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
+		cout << "Locals: " << endl;
+		for (int i = 0; i < cap; i++)
+		{
+			cout << allocated[i] << " ";
+		}
+		cout << endl << "Globals:" << endl;
+		for (int i = 0; i < cap; i++)
+		{
+			cout << globals[i] << " ";
+		}
+		cout << endl << "Names:" << endl;
+		for (map<string , string>::iterator i = names.begin(); i != names.end(); i++)
+		{
+			cout << (*i).first << " -> " << (*i).second << endl;
+		}
+		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
+	}
 private:
 	map<string, string> names;
 	int cap;  //how much memory we have
-	set<int> globals;  //numbers of global variables
+	vector<int> globals;  //numbers of global variables
 	vector<int> allocated;
 	
-	int alloc_cell() throw(int)
+	int alloc_mem() throw(int)
 	{
 		int i = 0;
-		while (i < cap) { if (allocated[i] == 0) { return i; } i++; }
-		throw (1);
+		while (i < cap) { if (allocated[i] == 0) { break; } i++; }
+		if (i == cap) { throw (1); }
+		allocated[i] = 1;
+		return i;
 	}
+	void reverse(char s[])
+	{
+	    int i, j;
+	    char c;
+	    for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+		 c = s[i];
+		 s[i] = s[j];
+		 s[j] = c;
+	    }
+	}
+	char *itoa(int n, char s[])
+ 	{
+     		int i, sign;
+     		if ((sign = n) < 0)  /* записываем знак */
+        	n = -n;          /* делаем n положительным числом */
+    		i = 0;
+     		do {       /* генерируем цифры в обратном порядке */
+         		s[i++] = n % 10 + '0';   /* берем следующую цифру */
+     		} while ((n /= 10) > 0);     /* удаляем */
+     		if (sign < 0)
+         		s[i++] = '-';
+     		s[i] = '\0';
+     		reverse(s);
+		return s;
+	}
+	
 };
 
 class Assembler
@@ -242,17 +340,18 @@ void yyerror(const char *s)
 	return 1;
 }*/
 
-Assembler asmr;
-Memory mem;
+Assembler asmr();
+Memory mem(30);
 
 int main()
 {
 	yyparse();
+	mem.print();
 }
 
 
 /* Line 268 of yacc.c  */
-#line 256 "analis.tab.c"
+#line 355 "analis.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -334,7 +433,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 198 "analis.y"
+#line 297 "analis.y"
 
 	int number;
 	char *string;
@@ -342,7 +441,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 346 "analis.tab.c"
+#line 445 "analis.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -354,7 +453,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 358 "analis.tab.c"
+#line 457 "analis.tab.c"
 
 #ifdef short
 # undef short
@@ -661,10 +760,10 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   204,   204,   205,   207,   208,   210,   211,   212,   214,
-     216,   218,   219,   221,   222,   224,   225,   226,   228,   229,
-     230,   231,   232,   234,   235,   236,   238,   239,   240,   242,
-     244,   245,   246,   248,   249,   254,   255,   256,   259,   260
+       0,   303,   303,   304,   306,   307,   309,   310,   311,   313,
+     315,   317,   318,   320,   321,   323,   324,   325,   327,   328,
+     329,   330,   331,   333,   334,   335,   337,   338,   339,   341,
+     343,   344,   345,   347,   348,   361,   362,   377,   380,   381
 };
 #endif
 
@@ -1642,17 +1741,45 @@ yyreduce:
         case 34:
 
 /* Line 1806 of yacc.c  */
-#line 250 "analis.y"
+#line 349 "analis.y"
     {
-			mem.alloc((yyvsp[(2) - (3)].string));
+			string str((yyvsp[(2) - (3)].string));
+			try
+			{			
+				mem.alloc(str);
+			}
+			catch (int e)
+			{
+				Error::error(e);
+				break;
+			}
+		}
+    break;
 
+  case 36:
+
+/* Line 1806 of yacc.c  */
+#line 363 "analis.y"
+    {
+			string str((yyvsp[(3) - (4)].string));
+			string int_name;
+			try
+			{			
+				int_name = mem.alloc(str);
+			}
+			catch (int e)
+			{
+				Error::error(e);
+				break;
+			}
+			mem.makeGlobal(int_name);
 		}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1656 "analis.tab.c"
+#line 1783 "analis.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1883,6 +2010,6 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 262 "analis.y"
+#line 383 "analis.y"
 
 

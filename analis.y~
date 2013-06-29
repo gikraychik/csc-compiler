@@ -14,13 +14,17 @@ using namespace std;
 
 class Error
 {
+public:
 	Error();
 	~Error();
 	static void error(int number)
 	{
-		switch number
+		switch (number)
 		{
 			case 1: cout << "Run out of memory" << endl; break;
+			case 2: cout << "Attempt to alloc memory for the second time; redeclaration of variable" << endl; break;
+			case 3: cout << "Memory::isFree: error: wrong int_name, it must have at least 1 digit in the end" << endl; break;
+			case 4: cout << "Memory::isFree: error: out of range" << endl;			
 			default: cout << "Unexpected error" << endl; break;
 		}
 	}
@@ -32,19 +36,59 @@ public:
 	{
 		cap = capacity;
 		allocated.resize(cap, 0);
+		globals.resize(cap, 0);
 	}
-	string &alloc(string &ext_name)
+	string &alloc(string &ext_name) throw(int)
 	{
 		if (names.find(ext_name) == names.end())  //not found
 		{
-			names[ext_name] = 
+			char *str = (char *)malloc(33*sizeof(char));
+			int x;
+			try
+			{
+				x = alloc_mem();
+			}
+			catch (int e)
+			{
+				free(str);
+				//some actions, if run out of memory
+			}
+			names[ext_name] = numberToInnerName(x);
+			free(str);
 		}
+		else { throw 2; }
+		return names[ext_name];
 	}
-	bool isFree(int number)
+	bool isFree(int number) throw(int)
 	{
-		return allocated.find(number) == allocated.end();
+		if ((number < 0) || (number >= cap)) { throw 4; }
+		return allocated[number] == 0;
 	}
-	bool isFree(string &int_name)
+	bool isFree(string &int_name) throw(int)
+	{
+		return isFree(innerNameToNumber(int_name));		
+	}
+	bool isGlobal(int number)
+	{
+		return globals[number] == 1;
+	}
+	void makeGlobal(int number)
+	{
+		globals[number] = 1;
+	}
+	void makeGlobal(string &int_name)
+	{
+		globals[innerNameToNumber(int_name)] = 1;
+	}
+	string getInnerName(string &ext_name)
+	{
+		if (names.find(ext_name) == names.end())  //not found
+		{
+			return string("");
+		}
+		return names[ext_name];
+	}
+	int innerNameToNumber(string &int_name)
 	{
 		const char *str = int_name.data();
 		char i = 0;
@@ -55,24 +99,78 @@ public:
 		}
 		if (str[i] == '\0')
 		{
-			//yyerror("Memory::isFree: error: wrong int_name, it must have at least 1 digit in the end");
+			throw(3);
 		}
 		int x = atoi(str+i);
-		return isFree(x);		
+		return x;
 	}
-
+	string numberToInnerName(int number)
+	{
+		char *str = (char *)malloc(33*sizeof(char));
+		string res = string("TMP") + string(itoa(number, str));
+		free(str);
+		return res;
+	}
+	void print()
+	{
+		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
+		cout << "Locals: " << endl;
+		for (int i = 0; i < cap; i++)
+		{
+			cout << allocated[i] << " ";
+		}
+		cout << endl << "Globals:" << endl;
+		for (int i = 0; i < cap; i++)
+		{
+			cout << globals[i] << " ";
+		}
+		cout << endl << "Names:" << endl;
+		for (map<string , string>::iterator i = names.begin(); i != names.end(); i++)
+		{
+			cout << (*i).first << " -> " << (*i).second << endl;
+		}
+		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
+	}
 private:
 	map<string, string> names;
 	int cap;  //how much memory we have
-	set<int> globals;  //numbers of global variables
+	vector<int> globals;  //numbers of global variables
 	vector<int> allocated;
 	
-	int alloc_cell() throw(int)
+	int alloc_mem() throw(int)
 	{
 		int i = 0;
-		while (i < cap) { if (allocated[i] == 0) { return i; } i++; }
-		throw (1);
+		while (i < cap) { if (allocated[i] == 0) { break; } i++; }
+		if (i == cap) { throw (1); }
+		allocated[i] = 1;
+		return i;
 	}
+	void reverse(char s[])
+	{
+	    int i, j;
+	    char c;
+	    for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+		 c = s[i];
+		 s[i] = s[j];
+		 s[j] = c;
+	    }
+	}
+	char *itoa(int n, char s[])
+ 	{
+     		int i, sign;
+     		if ((sign = n) < 0)  /* записываем знак */
+        	n = -n;          /* делаем n положительным числом */
+    		i = 0;
+     		do {       /* генерируем цифры в обратном порядке */
+         		s[i++] = n % 10 + '0';   /* берем следующую цифру */
+     		} while ((n /= 10) > 0);     /* удаляем */
+     		if (sign < 0)
+         		s[i++] = '-';
+     		s[i] = '\0';
+     		reverse(s);
+		return s;
+	}
+	
 };
 
 class Assembler
@@ -173,12 +271,13 @@ void yyerror(const char *s)
 	return 1;
 }*/
 
-Assembler asmr;
-Memory mem;
+Assembler asmr();
+Memory mem(30);
 
 int main()
 {
 	yyparse();
+	mem.print();
 }
 %}
 
@@ -248,11 +347,33 @@ term7:		NUMBER
 decl:		INIT NAME ASSIGN expr SEMICOLON
 		| INIT NAME SEMICOLON
 		{
-			mem.alloc($<string>2);
-
+			string str($<string>2);
+			try
+			{			
+				mem.alloc(str);
+			}
+			catch (int e)
+			{
+				Error::error(e);
+				break;
+			}
 		}
 		| INIT GLOBAL NAME ASSIGN SEMICOLON
 		| INIT GLOBAL NAME SEMICOLON
+		{
+			string str($<string>3);
+			string int_name;
+			try
+			{			
+				int_name = mem.alloc(str);
+			}
+			catch (int e)
+			{
+				Error::error(e);
+				break;
+			}
+			mem.makeGlobal(int_name);
+		}
 		| DEFINE NAME AS NAME SEMICOLON
 		;
 
