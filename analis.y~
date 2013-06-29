@@ -12,15 +12,32 @@
 
 using namespace std;
 
+class Error
+{
+	Error();
+	~Error();
+	static void error(int number)
+	{
+		switch number
+		{
+			case 1: cout << "Run out of memory" << endl; break;
+			default: cout << "Unexpected error" << endl; break;
+		}
+	}
+};
 class Memory
 {
 public:
-	Memory(int capacity) { cap = capacity; }
+	Memory(int capacity)
+	{
+		cap = capacity;
+		allocated.resize(cap, 0);
+	}
 	string &alloc(string &ext_name)
 	{
 		if (names.find(ext_name) == names.end())  //not found
 		{
-			names[ext_name] = ext_name;
+			names[ext_name] = 
 		}
 	}
 	bool isFree(int number)
@@ -43,23 +60,19 @@ public:
 		int x = atoi(str+i);
 		return isFree(x);		
 	}
-	bool isFree(string &ext_name)
-	{
-		if (names.find(ext_name) == names.end())  //not found
-		{
-			//throw exception
-		}
-		else  //found
-		{
-			return isFree(names[ext_name]);
-		}
-	}
 
 private:
 	map<string, string> names;
 	int cap;  //how much memory we have
 	set<int> globals;  //numbers of global variables
-	set<int> allocated;
+	vector<int> allocated;
+	
+	int alloc_cell() throw(int)
+	{
+		int i = 0;
+		while (i < cap) { if (allocated[i] == 0) { return i; } i++; }
+		throw (1);
+	}
 };
 
 class Assembler
@@ -160,6 +173,8 @@ void yyerror(const char *s)
 	return 1;
 }*/
 
+Assembler asmr;
+Memory mem;
 
 int main()
 {
@@ -170,7 +185,8 @@ int main()
 %token NUMBER NAME REF COLON SEMICOLON STRINGCONST STRING INTEGER COMA RETURN ASSIGN
 %token IF WHILE LOOP POOL READ WRITE NEQ
 %token LABEL RECOPENBRACE RECCLOSEBRACE
-%token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE GLOBAL
+%token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE
+%token GLOBAL DEFINE INIT AS
 
 %token AND OR
 %token NOT
@@ -193,6 +209,7 @@ commands :	commands command
 		;
 command :	assign
 		| condition
+		| decl
 		;
 assign :	NAME ASSIGN expr
 		;
@@ -228,7 +245,16 @@ term7:		NUMBER
 		| NAME
 		| OBRACE expr CBRACE
 		;
+decl:		INIT NAME ASSIGN expr SEMICOLON
+		| INIT NAME SEMICOLON
+		{
+			mem.alloc($<string>2);
 
+		}
+		| INIT GLOBAL NAME ASSIGN SEMICOLON
+		| INIT GLOBAL NAME SEMICOLON
+		| DEFINE NAME AS NAME SEMICOLON
+		;
 
 condition :	IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
 		| IF OBRACE expr CBRACE OBLOCK commands CBLOCK

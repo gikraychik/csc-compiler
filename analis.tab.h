@@ -66,19 +66,22 @@
      OBRACE = 284,
      CBRACE = 285,
      GLOBAL = 286,
-     AND = 287,
-     OR = 288,
-     NOT = 289,
-     LT = 290,
-     GT = 291,
-     LE = 292,
-     GE = 293,
-     EQ = 294,
-     NE = 295,
-     ADD = 296,
-     SUB = 297,
-     MUL = 298,
-     DIV = 299
+     DEFINE = 287,
+     INIT = 288,
+     AS = 289,
+     AND = 290,
+     OR = 291,
+     NOT = 292,
+     LT = 293,
+     GT = 294,
+     LE = 295,
+     GE = 296,
+     EQ = 297,
+     NE = 298,
+     ADD = 299,
+     SUB = 300,
+     MUL = 301,
+     DIV = 302
    };
 #endif
 
@@ -89,7 +92,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 171 "analis.y"
+#line 198 "analis.y"
 
 	int number;
 	char *string;
@@ -97,7 +100,7 @@ typedef union YYSTYPE
 
 
 /* Line 2068 of yacc.c  */
-#line 101 "analis.tab.h"
+#line 104 "analis.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
