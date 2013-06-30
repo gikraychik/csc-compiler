@@ -992,7 +992,7 @@ case 22:
 /* rule 22 can match eol */
 YY_RULE_SETUP
 #line 42 "lang.flex"
-{ return NE; }
+{ return NEQ; }
 	YY_BREAK
 case 23:
 /* rule 23 can match eol */

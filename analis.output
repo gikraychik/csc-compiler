@@ -38,7 +38,7 @@ Grammar
     7        | decl
     8        | delete
 
-    9 assign: NAME ASSIGN expr
+    9 assign: NAME ASSIGN expr SEMICOLON
 
    10 expr: int_expr
 
@@ -90,13 +90,12 @@ Grammar
    37      | NAME
    38      | OBRACE expr CBRACE
 
-   39 $@10: /* empty */
-
-   40 decl: INIT NAME ASSIGN $@10 expr SEMICOLON
-   41     | INIT NAME SEMICOLON
-   42     | INIT GLOBAL NAME ASSIGN SEMICOLON
-   43     | INIT GLOBAL NAME SEMICOLON
-   44     | DEFINE NAME AS NAME SEMICOLON
+   39 decl: INIT NAME ASSIGN expr SEMICOLON
+   40     | INIT NAME SEMICOLON
+   41     | INIT GLOBAL NAME ASSIGN SEMICOLON
+   42     | INIT GLOBAL NAME SEMICOLON
+   43     | DEFINE NAME AS NAME SEMICOLON
+   44     | expr
 
    45 delete: DELETE NAME SEMICOLON
 
@@ -109,16 +108,16 @@ Terminals, with rules where they appear
 $end (0) 0
 error (256)
 NUMBER (258) 36
-NAME (259) 9 37 40 41 42 43 44 45
+NAME (259) 9 37 39 40 41 42 43 45
 REF (260)
 COLON (261)
-SEMICOLON (262) 40 41 42 43 44 45
+SEMICOLON (262) 9 39 40 41 42 43 45
 STRINGCONST (263)
 STRING (264)
 INTEGER (265)
 COMA (266)
 RETURN (267)
-ASSIGN (268) 9 40 42
+ASSIGN (268) 9 39 41
 IF (269) 46 47
 WHILE (270)
 LOOP (271)
@@ -137,10 +136,10 @@ GOTO (283)
 OBRACE (284) 38 46 47
 CBRACE (285) 38 46 47
 DELETE (286) 45
-GLOBAL (287) 42 43
-DEFINE (288) 44
-INIT (289) 40 41 42 43
-AS (290) 44
+GLOBAL (287) 41 42
+DEFINE (288) 43
+INIT (289) 39 40 41 42
+AS (290) 43
 AND (291) 15
 OR (292) 12
 NOT (293) 34
@@ -169,7 +168,7 @@ command (52)
 assign (53)
     on left: 9, on right: 5
 expr (54)
-    on left: 10, on right: 9 38 40 46 47
+    on left: 10, on right: 9 38 39 44 46 47
 int_expr (55)
     on left: 12 13, on right: 10 12
 $@1 (56)
@@ -203,12 +202,10 @@ term6 (69)
 term7 (70)
     on left: 36 37 38, on right: 34 35
 decl (71)
-    on left: 40 41 42 43 44, on right: 7
-$@10 (72)
-    on left: 39, on right: 40
-delete (73)
+    on left: 39 40 41 42 43 44, on right: 7
+delete (72)
     on left: 45, on right: 8
-condition (74)
+condition (73)
     on left: 46 47, on right: 6
 
 
@@ -216,268 +213,181 @@ state 0
 
     0 $accept: . program $end
 
-    NAME    shift, and go to state 1
-    IF      shift, and go to state 2
-    DELETE  shift, and go to state 3
-    DEFINE  shift, and go to state 4
-    INIT    shift, and go to state 5
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 2
+    IF      shift, and go to state 3
+    OBRACE  shift, and go to state 4
+    DELETE  shift, and go to state 5
+    DEFINE  shift, and go to state 6
+    INIT    shift, and go to state 7
+    NOT     shift, and go to state 8
 
     $default  reduce using rule 1 (program)
 
-    program    go to state 6
-    commands   go to state 7
-    command    go to state 8
-    assign     go to state 9
-    decl       go to state 10
-    delete     go to state 11
-    condition  go to state 12
+    program    go to state 9
+    commands   go to state 10
+    command    go to state 11
+    assign     go to state 12
+    expr       go to state 13
+    int_expr   go to state 14
+    term1      go to state 15
+    term2      go to state 16
+    term3      go to state 17
+    term4      go to state 18
+    term6      go to state 19
+    term7      go to state 20
+    decl       go to state 21
+    delete     go to state 22
+    condition  go to state 23
 
 
 state 1
-
-    9 assign: NAME . ASSIGN expr
-
-    ASSIGN  shift, and go to state 13
-
-
-state 2
-
-   46 condition: IF . OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   47          | IF . OBRACE expr CBRACE OBLOCK commands CBLOCK
-
-    OBRACE  shift, and go to state 14
-
-
-state 3
-
-   45 delete: DELETE . NAME SEMICOLON
-
-    NAME  shift, and go to state 15
-
-
-state 4
-
-   44 decl: DEFINE . NAME AS NAME SEMICOLON
-
-    NAME  shift, and go to state 16
-
-
-state 5
-
-   40 decl: INIT . NAME ASSIGN $@10 expr SEMICOLON
-   41     | INIT . NAME SEMICOLON
-   42     | INIT . GLOBAL NAME ASSIGN SEMICOLON
-   43     | INIT . GLOBAL NAME SEMICOLON
-
-    NAME    shift, and go to state 17
-    GLOBAL  shift, and go to state 18
-
-
-state 6
-
-    0 $accept: program . $end
-
-    $end  shift, and go to state 19
-
-
-state 7
-
-    2 program: commands .
-    3 commands: commands . command
-
-    NAME    shift, and go to state 1
-    IF      shift, and go to state 2
-    DELETE  shift, and go to state 3
-    DEFINE  shift, and go to state 4
-    INIT    shift, and go to state 5
-
-    $default  reduce using rule 2 (program)
-
-    command    go to state 20
-    assign     go to state 9
-    decl       go to state 10
-    delete     go to state 11
-    condition  go to state 12
-
-
-state 8
-
-    4 commands: command .
-
-    $default  reduce using rule 4 (commands)
-
-
-state 9
-
-    5 command: assign .
-
-    $default  reduce using rule 5 (command)
-
-
-state 10
-
-    7 command: decl .
-
-    $default  reduce using rule 7 (command)
-
-
-state 11
-
-    8 command: delete .
-
-    $default  reduce using rule 8 (command)
-
-
-state 12
-
-    6 command: condition .
-
-    $default  reduce using rule 6 (command)
-
-
-state 13
-
-    9 assign: NAME ASSIGN . expr
-
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
-
-    expr      go to state 25
-    int_expr  go to state 26
-    term1     go to state 27
-    term2     go to state 28
-    term3     go to state 29
-    term4     go to state 30
-    term6     go to state 31
-    term7     go to state 32
-
-
-state 14
-
-   46 condition: IF OBRACE . expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   47          | IF OBRACE . expr CBRACE OBLOCK commands CBLOCK
-
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
-
-    expr      go to state 33
-    int_expr  go to state 26
-    term1     go to state 27
-    term2     go to state 28
-    term3     go to state 29
-    term4     go to state 30
-    term6     go to state 31
-    term7     go to state 32
-
-
-state 15
-
-   45 delete: DELETE NAME . SEMICOLON
-
-    SEMICOLON  shift, and go to state 34
-
-
-state 16
-
-   44 decl: DEFINE NAME . AS NAME SEMICOLON
-
-    AS  shift, and go to state 35
-
-
-state 17
-
-   40 decl: INIT NAME . ASSIGN $@10 expr SEMICOLON
-   41     | INIT NAME . SEMICOLON
-
-    SEMICOLON  shift, and go to state 36
-    ASSIGN     shift, and go to state 37
-
-
-state 18
-
-   42 decl: INIT GLOBAL . NAME ASSIGN SEMICOLON
-   43     | INIT GLOBAL . NAME SEMICOLON
-
-    NAME  shift, and go to state 38
-
-
-state 19
-
-    0 $accept: program $end .
-
-    $default  accept
-
-
-state 20
-
-    3 commands: commands command .
-
-    $default  reduce using rule 3 (commands)
-
-
-state 21
 
    36 term7: NUMBER .
 
     $default  reduce using rule 36 (term7)
 
 
-state 22
+state 2
 
+    9 assign: NAME . ASSIGN expr SEMICOLON
    37 term7: NAME .
+
+    ASSIGN  shift, and go to state 24
 
     $default  reduce using rule 37 (term7)
 
 
-state 23
+state 3
+
+   46 condition: IF . OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   47          | IF . OBRACE expr CBRACE OBLOCK commands CBLOCK
+
+    OBRACE  shift, and go to state 25
+
+
+state 4
 
    38 term7: OBRACE . expr CBRACE
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
 
-    expr      go to state 39
-    int_expr  go to state 26
-    term1     go to state 27
-    term2     go to state 28
-    term3     go to state 29
-    term4     go to state 30
-    term6     go to state 31
-    term7     go to state 32
+    expr      go to state 27
+    int_expr  go to state 14
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term6     go to state 19
+    term7     go to state 20
 
 
-state 24
+state 5
+
+   45 delete: DELETE . NAME SEMICOLON
+
+    NAME  shift, and go to state 28
+
+
+state 6
+
+   43 decl: DEFINE . NAME AS NAME SEMICOLON
+
+    NAME  shift, and go to state 29
+
+
+state 7
+
+   39 decl: INIT . NAME ASSIGN expr SEMICOLON
+   40     | INIT . NAME SEMICOLON
+   41     | INIT . GLOBAL NAME ASSIGN SEMICOLON
+   42     | INIT . GLOBAL NAME SEMICOLON
+
+    NAME    shift, and go to state 30
+    GLOBAL  shift, and go to state 31
+
+
+state 8
 
    34 term6: NOT . term7
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
 
-    term7  go to state 40
-
-
-state 25
-
-    9 assign: NAME ASSIGN expr .
-
-    $default  reduce using rule 9 (assign)
+    term7  go to state 32
 
 
-state 26
+state 9
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 33
+
+
+state 10
+
+    2 program: commands .
+    3 commands: commands . command
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 2
+    IF      shift, and go to state 3
+    OBRACE  shift, and go to state 4
+    DELETE  shift, and go to state 5
+    DEFINE  shift, and go to state 6
+    INIT    shift, and go to state 7
+    NOT     shift, and go to state 8
+
+    $default  reduce using rule 2 (program)
+
+    command    go to state 34
+    assign     go to state 12
+    expr       go to state 13
+    int_expr   go to state 14
+    term1      go to state 15
+    term2      go to state 16
+    term3      go to state 17
+    term4      go to state 18
+    term6      go to state 19
+    term7      go to state 20
+    decl       go to state 21
+    delete     go to state 22
+    condition  go to state 23
+
+
+state 11
+
+    4 commands: command .
+
+    $default  reduce using rule 4 (commands)
+
+
+state 12
+
+    5 command: assign .
+
+    $default  reduce using rule 5 (command)
+
+
+state 13
+
+   44 decl: expr .
+
+    $default  reduce using rule 44 (decl)
+
+
+state 14
 
    10 expr: int_expr .
 
     $default  reduce using rule 10 (expr)
 
 
-state 27
+state 15
 
    12 int_expr: term1 . $@1 OR int_expr
    13         | term1 .
@@ -485,10 +395,10 @@ state 27
     OR        reduce using rule 11 ($@1)
     $default  reduce using rule 13 (int_expr)
 
-    $@1  go to state 41
+    $@1  go to state 35
 
 
-state 28
+state 16
 
    15 term1: term2 . $@2 AND term1
    16      | term2 .
@@ -496,10 +406,10 @@ state 28
     AND       reduce using rule 14 ($@2)
     $default  reduce using rule 16 (term1)
 
-    $@2  go to state 42
+    $@2  go to state 36
 
 
-state 29
+state 17
 
    18 term2: term3 . $@3 EQ term2
    19      | term3 .
@@ -507,10 +417,10 @@ state 29
     EQ        reduce using rule 17 ($@3)
     $default  reduce using rule 19 (term2)
 
-    $@3  go to state 43
+    $@3  go to state 37
 
 
-state 30
+state 18
 
    21 term3: term4 . $@4 LT term3
    23      | term4 . $@5 LE term3
@@ -524,13 +434,13 @@ state 30
     GE        reduce using rule 26 ($@7)
     $default  reduce using rule 28 (term3)
 
-    $@4  go to state 44
-    $@5  go to state 45
-    $@6  go to state 46
-    $@7  go to state 47
+    $@4  go to state 38
+    $@5  go to state 39
+    $@6  go to state 40
+    $@7  go to state 41
 
 
-state 31
+state 19
 
    30 term4: term6 . $@8 ADD term4
    32      | term6 . $@9 SUB term4
@@ -540,520 +450,681 @@ state 31
     SUB       reduce using rule 31 ($@9)
     $default  reduce using rule 33 (term4)
 
-    $@8  go to state 48
-    $@9  go to state 49
+    $@8  go to state 42
+    $@9  go to state 43
 
 
-state 32
+state 20
 
    35 term6: term7 .
 
     $default  reduce using rule 35 (term6)
 
 
-state 33
+state 21
 
-   46 condition: IF OBRACE expr . CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   47          | IF OBRACE expr . CBRACE OBLOCK commands CBLOCK
+    7 command: decl .
 
-    CBRACE  shift, and go to state 50
-
-
-state 34
-
-   45 delete: DELETE NAME SEMICOLON .
-
-    $default  reduce using rule 45 (delete)
+    $default  reduce using rule 7 (command)
 
 
-state 35
+state 22
 
-   44 decl: DEFINE NAME AS . NAME SEMICOLON
+    8 command: delete .
+
+    $default  reduce using rule 8 (command)
+
+
+state 23
+
+    6 command: condition .
+
+    $default  reduce using rule 6 (command)
+
+
+state 24
+
+    9 assign: NAME ASSIGN . expr SEMICOLON
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
+
+    expr      go to state 44
+    int_expr  go to state 14
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term6     go to state 19
+    term7     go to state 20
+
+
+state 25
+
+   46 condition: IF OBRACE . expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   47          | IF OBRACE . expr CBRACE OBLOCK commands CBLOCK
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
+
+    expr      go to state 45
+    int_expr  go to state 14
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term6     go to state 19
+    term7     go to state 20
+
+
+state 26
+
+   37 term7: NAME .
+
+    $default  reduce using rule 37 (term7)
+
+
+state 27
+
+   38 term7: OBRACE expr . CBRACE
+
+    CBRACE  shift, and go to state 46
+
+
+state 28
+
+   45 delete: DELETE NAME . SEMICOLON
+
+    SEMICOLON  shift, and go to state 47
+
+
+state 29
+
+   43 decl: DEFINE NAME . AS NAME SEMICOLON
+
+    AS  shift, and go to state 48
+
+
+state 30
+
+   39 decl: INIT NAME . ASSIGN expr SEMICOLON
+   40     | INIT NAME . SEMICOLON
+
+    SEMICOLON  shift, and go to state 49
+    ASSIGN     shift, and go to state 50
+
+
+state 31
+
+   41 decl: INIT GLOBAL . NAME ASSIGN SEMICOLON
+   42     | INIT GLOBAL . NAME SEMICOLON
 
     NAME  shift, and go to state 51
 
 
-state 36
-
-   41 decl: INIT NAME SEMICOLON .
-
-    $default  reduce using rule 41 (decl)
-
-
-state 37
-
-   40 decl: INIT NAME ASSIGN . $@10 expr SEMICOLON
-
-    $default  reduce using rule 39 ($@10)
-
-    $@10  go to state 52
-
-
-state 38
-
-   42 decl: INIT GLOBAL NAME . ASSIGN SEMICOLON
-   43     | INIT GLOBAL NAME . SEMICOLON
-
-    SEMICOLON  shift, and go to state 53
-    ASSIGN     shift, and go to state 54
-
-
-state 39
-
-   38 term7: OBRACE expr . CBRACE
-
-    CBRACE  shift, and go to state 55
-
-
-state 40
+state 32
 
    34 term6: NOT term7 .
 
     $default  reduce using rule 34 (term6)
 
 
-state 41
+state 33
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+state 34
+
+    3 commands: commands command .
+
+    $default  reduce using rule 3 (commands)
+
+
+state 35
 
    12 int_expr: term1 $@1 . OR int_expr
 
-    OR  shift, and go to state 56
+    OR  shift, and go to state 52
+
+
+state 36
+
+   15 term1: term2 $@2 . AND term1
+
+    AND  shift, and go to state 53
+
+
+state 37
+
+   18 term2: term3 $@3 . EQ term2
+
+    EQ  shift, and go to state 54
+
+
+state 38
+
+   21 term3: term4 $@4 . LT term3
+
+    LT  shift, and go to state 55
+
+
+state 39
+
+   23 term3: term4 $@5 . LE term3
+
+    LE  shift, and go to state 56
+
+
+state 40
+
+   25 term3: term4 $@6 . GT term3
+
+    GT  shift, and go to state 57
+
+
+state 41
+
+   27 term3: term4 $@7 . GE term3
+
+    GE  shift, and go to state 58
 
 
 state 42
 
-   15 term1: term2 $@2 . AND term1
+   30 term4: term6 $@8 . ADD term4
 
-    AND  shift, and go to state 57
+    ADD  shift, and go to state 59
 
 
 state 43
 
-   18 term2: term3 $@3 . EQ term2
+   32 term4: term6 $@9 . SUB term4
 
-    EQ  shift, and go to state 58
+    SUB  shift, and go to state 60
 
 
 state 44
 
-   21 term3: term4 $@4 . LT term3
+    9 assign: NAME ASSIGN expr . SEMICOLON
 
-    LT  shift, and go to state 59
+    SEMICOLON  shift, and go to state 61
 
 
 state 45
 
-   23 term3: term4 $@5 . LE term3
+   46 condition: IF OBRACE expr . CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   47          | IF OBRACE expr . CBRACE OBLOCK commands CBLOCK
 
-    LE  shift, and go to state 60
+    CBRACE  shift, and go to state 62
 
 
 state 46
-
-   25 term3: term4 $@6 . GT term3
-
-    GT  shift, and go to state 61
-
-
-state 47
-
-   27 term3: term4 $@7 . GE term3
-
-    GE  shift, and go to state 62
-
-
-state 48
-
-   30 term4: term6 $@8 . ADD term4
-
-    ADD  shift, and go to state 63
-
-
-state 49
-
-   32 term4: term6 $@9 . SUB term4
-
-    SUB  shift, and go to state 64
-
-
-state 50
-
-   46 condition: IF OBRACE expr CBRACE . OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   47          | IF OBRACE expr CBRACE . OBLOCK commands CBLOCK
-
-    OBLOCK  shift, and go to state 65
-
-
-state 51
-
-   44 decl: DEFINE NAME AS NAME . SEMICOLON
-
-    SEMICOLON  shift, and go to state 66
-
-
-state 52
-
-   40 decl: INIT NAME ASSIGN $@10 . expr SEMICOLON
-
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
-
-    expr      go to state 67
-    int_expr  go to state 26
-    term1     go to state 27
-    term2     go to state 28
-    term3     go to state 29
-    term4     go to state 30
-    term6     go to state 31
-    term7     go to state 32
-
-
-state 53
-
-   43 decl: INIT GLOBAL NAME SEMICOLON .
-
-    $default  reduce using rule 43 (decl)
-
-
-state 54
-
-   42 decl: INIT GLOBAL NAME ASSIGN . SEMICOLON
-
-    SEMICOLON  shift, and go to state 68
-
-
-state 55
 
    38 term7: OBRACE expr CBRACE .
 
     $default  reduce using rule 38 (term7)
 
 
-state 56
+state 47
+
+   45 delete: DELETE NAME SEMICOLON .
+
+    $default  reduce using rule 45 (delete)
+
+
+state 48
+
+   43 decl: DEFINE NAME AS . NAME SEMICOLON
+
+    NAME  shift, and go to state 63
+
+
+state 49
+
+   40 decl: INIT NAME SEMICOLON .
+
+    $default  reduce using rule 40 (decl)
+
+
+state 50
+
+   39 decl: INIT NAME ASSIGN . expr SEMICOLON
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
+
+    expr      go to state 64
+    int_expr  go to state 14
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term6     go to state 19
+    term7     go to state 20
+
+
+state 51
+
+   41 decl: INIT GLOBAL NAME . ASSIGN SEMICOLON
+   42     | INIT GLOBAL NAME . SEMICOLON
+
+    SEMICOLON  shift, and go to state 65
+    ASSIGN     shift, and go to state 66
+
+
+state 52
 
    12 int_expr: term1 $@1 OR . int_expr
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
 
-    int_expr  go to state 69
-    term1     go to state 27
-    term2     go to state 28
-    term3     go to state 29
-    term4     go to state 30
-    term6     go to state 31
-    term7     go to state 32
+    int_expr  go to state 67
+    term1     go to state 15
+    term2     go to state 16
+    term3     go to state 17
+    term4     go to state 18
+    term6     go to state 19
+    term7     go to state 20
+
+
+state 53
+
+   15 term1: term2 $@2 AND . term1
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
+
+    term1  go to state 68
+    term2  go to state 16
+    term3  go to state 17
+    term4  go to state 18
+    term6  go to state 19
+    term7  go to state 20
+
+
+state 54
+
+   18 term2: term3 $@3 EQ . term2
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
+
+    term2  go to state 69
+    term3  go to state 17
+    term4  go to state 18
+    term6  go to state 19
+    term7  go to state 20
+
+
+state 55
+
+   21 term3: term4 $@4 LT . term3
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
+
+    term3  go to state 70
+    term4  go to state 18
+    term6  go to state 19
+    term7  go to state 20
+
+
+state 56
+
+   23 term3: term4 $@5 LE . term3
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
+
+    term3  go to state 71
+    term4  go to state 18
+    term6  go to state 19
+    term7  go to state 20
 
 
 state 57
 
-   15 term1: term2 $@2 AND . term1
+   25 term3: term4 $@6 GT . term3
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
 
-    term1  go to state 70
-    term2  go to state 28
-    term3  go to state 29
-    term4  go to state 30
-    term6  go to state 31
-    term7  go to state 32
+    term3  go to state 72
+    term4  go to state 18
+    term6  go to state 19
+    term7  go to state 20
 
 
 state 58
 
-   18 term2: term3 $@3 EQ . term2
+   27 term3: term4 $@7 GE . term3
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
 
-    term2  go to state 71
-    term3  go to state 29
-    term4  go to state 30
-    term6  go to state 31
-    term7  go to state 32
+    term3  go to state 73
+    term4  go to state 18
+    term6  go to state 19
+    term7  go to state 20
 
 
 state 59
 
-   21 term3: term4 $@4 LT . term3
+   30 term4: term6 $@8 ADD . term4
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
 
-    term3  go to state 72
-    term4  go to state 30
-    term6  go to state 31
-    term7  go to state 32
+    term4  go to state 74
+    term6  go to state 19
+    term7  go to state 20
 
 
 state 60
 
-   23 term3: term4 $@5 LE . term3
+   32 term4: term6 $@9 SUB . term4
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 26
+    OBRACE  shift, and go to state 4
+    NOT     shift, and go to state 8
 
-    term3  go to state 73
-    term4  go to state 30
-    term6  go to state 31
-    term7  go to state 32
+    term4  go to state 75
+    term6  go to state 19
+    term7  go to state 20
 
 
 state 61
 
-   25 term3: term4 $@6 GT . term3
+    9 assign: NAME ASSIGN expr SEMICOLON .
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
-
-    term3  go to state 74
-    term4  go to state 30
-    term6  go to state 31
-    term7  go to state 32
+    $default  reduce using rule 9 (assign)
 
 
 state 62
 
-   27 term3: term4 $@7 GE . term3
+   46 condition: IF OBRACE expr CBRACE . OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   47          | IF OBRACE expr CBRACE . OBLOCK commands CBLOCK
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
-
-    term3  go to state 75
-    term4  go to state 30
-    term6  go to state 31
-    term7  go to state 32
+    OBLOCK  shift, and go to state 76
 
 
 state 63
 
-   30 term4: term6 $@8 ADD . term4
+   43 decl: DEFINE NAME AS NAME . SEMICOLON
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
-
-    term4  go to state 76
-    term6  go to state 31
-    term7  go to state 32
+    SEMICOLON  shift, and go to state 77
 
 
 state 64
 
-   32 term4: term6 $@9 SUB . term4
+   39 decl: INIT NAME ASSIGN expr . SEMICOLON
 
-    NUMBER  shift, and go to state 21
-    NAME    shift, and go to state 22
-    OBRACE  shift, and go to state 23
-    NOT     shift, and go to state 24
-
-    term4  go to state 77
-    term6  go to state 31
-    term7  go to state 32
+    SEMICOLON  shift, and go to state 78
 
 
 state 65
 
-   46 condition: IF OBRACE expr CBRACE OBLOCK . commands CBLOCK ELSE OBLOCK commands CBLOCK
-   47          | IF OBRACE expr CBRACE OBLOCK . commands CBLOCK
-
-    NAME    shift, and go to state 1
-    IF      shift, and go to state 2
-    DELETE  shift, and go to state 3
-    DEFINE  shift, and go to state 4
-    INIT    shift, and go to state 5
-
-    commands   go to state 78
-    command    go to state 8
-    assign     go to state 9
-    decl       go to state 10
-    delete     go to state 11
-    condition  go to state 12
-
-
-state 66
-
-   44 decl: DEFINE NAME AS NAME SEMICOLON .
-
-    $default  reduce using rule 44 (decl)
-
-
-state 67
-
-   40 decl: INIT NAME ASSIGN $@10 expr . SEMICOLON
-
-    SEMICOLON  shift, and go to state 79
-
-
-state 68
-
-   42 decl: INIT GLOBAL NAME ASSIGN SEMICOLON .
+   42 decl: INIT GLOBAL NAME SEMICOLON .
 
     $default  reduce using rule 42 (decl)
 
 
-state 69
+state 66
+
+   41 decl: INIT GLOBAL NAME ASSIGN . SEMICOLON
+
+    SEMICOLON  shift, and go to state 79
+
+
+state 67
 
    12 int_expr: term1 $@1 OR int_expr .
 
     $default  reduce using rule 12 (int_expr)
 
 
-state 70
+state 68
 
    15 term1: term2 $@2 AND term1 .
 
     $default  reduce using rule 15 (term1)
 
 
-state 71
+state 69
 
    18 term2: term3 $@3 EQ term2 .
 
     $default  reduce using rule 18 (term2)
 
 
-state 72
+state 70
 
    21 term3: term4 $@4 LT term3 .
 
     $default  reduce using rule 21 (term3)
 
 
-state 73
+state 71
 
    23 term3: term4 $@5 LE term3 .
 
     $default  reduce using rule 23 (term3)
 
 
-state 74
+state 72
 
    25 term3: term4 $@6 GT term3 .
 
     $default  reduce using rule 25 (term3)
 
 
-state 75
+state 73
 
    27 term3: term4 $@7 GE term3 .
 
     $default  reduce using rule 27 (term3)
 
 
-state 76
+state 74
 
    30 term4: term6 $@8 ADD term4 .
 
     $default  reduce using rule 30 (term4)
 
 
-state 77
+state 75
 
    32 term4: term6 $@9 SUB term4 .
 
     $default  reduce using rule 32 (term4)
 
 
+state 76
+
+   46 condition: IF OBRACE expr CBRACE OBLOCK . commands CBLOCK ELSE OBLOCK commands CBLOCK
+   47          | IF OBRACE expr CBRACE OBLOCK . commands CBLOCK
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 2
+    IF      shift, and go to state 3
+    OBRACE  shift, and go to state 4
+    DELETE  shift, and go to state 5
+    DEFINE  shift, and go to state 6
+    INIT    shift, and go to state 7
+    NOT     shift, and go to state 8
+
+    commands   go to state 80
+    command    go to state 11
+    assign     go to state 12
+    expr       go to state 13
+    int_expr   go to state 14
+    term1      go to state 15
+    term2      go to state 16
+    term3      go to state 17
+    term4      go to state 18
+    term6      go to state 19
+    term7      go to state 20
+    decl       go to state 21
+    delete     go to state 22
+    condition  go to state 23
+
+
+state 77
+
+   43 decl: DEFINE NAME AS NAME SEMICOLON .
+
+    $default  reduce using rule 43 (decl)
+
+
 state 78
+
+   39 decl: INIT NAME ASSIGN expr SEMICOLON .
+
+    $default  reduce using rule 39 (decl)
+
+
+state 79
+
+   41 decl: INIT GLOBAL NAME ASSIGN SEMICOLON .
+
+    $default  reduce using rule 41 (decl)
+
+
+state 80
 
     3 commands: commands . command
    46 condition: IF OBRACE expr CBRACE OBLOCK commands . CBLOCK ELSE OBLOCK commands CBLOCK
    47          | IF OBRACE expr CBRACE OBLOCK commands . CBLOCK
 
-    NAME    shift, and go to state 1
-    IF      shift, and go to state 2
-    CBLOCK  shift, and go to state 80
-    DELETE  shift, and go to state 3
-    DEFINE  shift, and go to state 4
-    INIT    shift, and go to state 5
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 2
+    IF      shift, and go to state 3
+    CBLOCK  shift, and go to state 81
+    OBRACE  shift, and go to state 4
+    DELETE  shift, and go to state 5
+    DEFINE  shift, and go to state 6
+    INIT    shift, and go to state 7
+    NOT     shift, and go to state 8
 
-    command    go to state 20
-    assign     go to state 9
-    decl       go to state 10
-    delete     go to state 11
-    condition  go to state 12
-
-
-state 79
-
-   40 decl: INIT NAME ASSIGN $@10 expr SEMICOLON .
-
-    $default  reduce using rule 40 (decl)
-
-
-state 80
-
-   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK . ELSE OBLOCK commands CBLOCK
-   47          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK .
-
-    ELSE  shift, and go to state 81
-
-    $default  reduce using rule 47 (condition)
+    command    go to state 34
+    assign     go to state 12
+    expr       go to state 13
+    int_expr   go to state 14
+    term1      go to state 15
+    term2      go to state 16
+    term3      go to state 17
+    term4      go to state 18
+    term6      go to state 19
+    term7      go to state 20
+    decl       go to state 21
+    delete     go to state 22
+    condition  go to state 23
 
 
 state 81
 
-   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE . OBLOCK commands CBLOCK
+   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK . ELSE OBLOCK commands CBLOCK
+   47          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK .
 
-    OBLOCK  shift, and go to state 82
+    ELSE  shift, and go to state 82
+
+    $default  reduce using rule 47 (condition)
 
 
 state 82
 
-   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK . commands CBLOCK
+   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE . OBLOCK commands CBLOCK
 
-    NAME    shift, and go to state 1
-    IF      shift, and go to state 2
-    DELETE  shift, and go to state 3
-    DEFINE  shift, and go to state 4
-    INIT    shift, and go to state 5
-
-    commands   go to state 83
-    command    go to state 8
-    assign     go to state 9
-    decl       go to state 10
-    delete     go to state 11
-    condition  go to state 12
+    OBLOCK  shift, and go to state 83
 
 
 state 83
 
-    3 commands: commands . command
-   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands . CBLOCK
+   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK . commands CBLOCK
 
-    NAME    shift, and go to state 1
-    IF      shift, and go to state 2
-    CBLOCK  shift, and go to state 84
-    DELETE  shift, and go to state 3
-    DEFINE  shift, and go to state 4
-    INIT    shift, and go to state 5
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 2
+    IF      shift, and go to state 3
+    OBRACE  shift, and go to state 4
+    DELETE  shift, and go to state 5
+    DEFINE  shift, and go to state 6
+    INIT    shift, and go to state 7
+    NOT     shift, and go to state 8
 
-    command    go to state 20
-    assign     go to state 9
-    decl       go to state 10
-    delete     go to state 11
-    condition  go to state 12
+    commands   go to state 84
+    command    go to state 11
+    assign     go to state 12
+    expr       go to state 13
+    int_expr   go to state 14
+    term1      go to state 15
+    term2      go to state 16
+    term3      go to state 17
+    term4      go to state 18
+    term6      go to state 19
+    term7      go to state 20
+    decl       go to state 21
+    delete     go to state 22
+    condition  go to state 23
 
 
 state 84
+
+    3 commands: commands . command
+   46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands . CBLOCK
+
+    NUMBER  shift, and go to state 1
+    NAME    shift, and go to state 2
+    IF      shift, and go to state 3
+    CBLOCK  shift, and go to state 85
+    OBRACE  shift, and go to state 4
+    DELETE  shift, and go to state 5
+    DEFINE  shift, and go to state 6
+    INIT    shift, and go to state 7
+    NOT     shift, and go to state 8
+
+    command    go to state 34
+    assign     go to state 12
+    expr       go to state 13
+    int_expr   go to state 14
+    term1      go to state 15
+    term2      go to state 16
+    term3      go to state 17
+    term4      go to state 18
+    term6      go to state 19
+    term7      go to state 20
+    decl       go to state 21
+    delete     go to state 22
+    condition  go to state 23
+
+
+state 85
 
    46 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK .
 

@@ -218,7 +218,7 @@ public:
 	}
 	void move(int var1, const char *var2)
 	{
-		binary("MOVE", var1, var2);
+		binary("IMOVE", var1, var2);
 	}
 	void _not(const char *op1, const char *res)
 	{
@@ -254,7 +254,7 @@ public:
 	}
 	void eq(int op1, const char *op2, const char *res)
 	{
-		ternary("ADD", op1, op2, res);
+		ternary("IEQ", op1, op2, res);
 	}
 	void _or(const char *op1, const char *op2, const char *res)
 	{
@@ -321,6 +321,7 @@ void inTerm(int num, const char *&res, const char *&arg)
 }
 int main()
 {
+	cout << "plpl";
 	yyparse();
 	mem.print();
 }
@@ -356,7 +357,7 @@ command :	assign
 		| decl
 		| delete
 		;
-assign :	NAME ASSIGN expr
+assign :	NAME ASSIGN expr SEMICOLON
 		;
 expr :		int_expr { $<string>$ = $<string>1; }
 		;
@@ -433,7 +434,7 @@ term7:		NUMBER
 		| NAME
 		| OBRACE expr CBRACE
 		;
-decl:		INIT NAME ASSIGN { cout << "hjh"; } expr SEMICOLON
+decl:		INIT NAME ASSIGN expr SEMICOLON
 		| INIT NAME SEMICOLON
 		{
 			string str($<string>2);
@@ -464,13 +465,15 @@ decl:		INIT NAME ASSIGN { cout << "hjh"; } expr SEMICOLON
 			mem.makeGlobal(int_name);
 		}
 		| DEFINE NAME AS NAME SEMICOLON
+		| expr
 		;
 delete:		DELETE NAME SEMICOLON
 		{
-			string ext_name = string($<string>2);                 // this block need to be tested		
+			string ext_name = string($<string>2);	
 			try { mem.free_mem(ext_name); }
 			catch (int e) { Error::error(e); break; }
-		}	
+		}
+		;	
 condition :	IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
 		| IF OBRACE expr CBRACE OBLOCK commands CBLOCK
 		;

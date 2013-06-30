@@ -39,7 +39,7 @@ WSN [ \t\n]*
 	">"{WSN}				{ return GT; }
 	">="{WSN}				{ return GE; }
 	"=="{WSN}				{ return EQ; }
-	"!="{WSN}				{ return NE; }
+	"!="{WSN}				{ return NEQ; }
 	"&&"{WSN}				{ return AND; }
 	"||"{WSN}				{ return OR; }
 	"!"{WSN}				{ return NOT; }
