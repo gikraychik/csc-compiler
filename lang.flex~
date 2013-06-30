@@ -31,6 +31,7 @@ WSN [ \t\n]*
 	"define"{WS}				{ return DEFINE; }
 	"init"{WS}				{ return INIT; }
 	"as"{WS}				{ return AS; }
+	"delete"{WS}				{ return DELETE; }
 	"["{WSN}				{ return RECOPENBRACE; }
 	"]"{WSN}				{ return RECCLOSEBRACE; }
 	"<"{WSN}				{ return LT; }

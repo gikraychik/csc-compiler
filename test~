@@ -1,5 +1,1 @@
-init x;
-init global y;
-init z;
-delete x;
-init count;
+2+3

@@ -93,10 +93,10 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 330 "analis.y"
+#line 342 "analis.y"
 
 	int number;
-	char *string;
+	const char *string;
 
 
 

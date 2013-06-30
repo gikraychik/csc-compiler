@@ -72,7 +72,6 @@ public:
 		}
 		return res;
 	}
-
 	bool isFree(int number) throw(int)
 	{
 		if ((number < 0) || (number >= cap)) { throw 4; }
@@ -213,73 +212,73 @@ public:
 	{	
 	}
 	~Assembler() { }
-	void move(string &var1, string &var2)
+	void move(const char *var1, const char *var2)
 	{
 		binary("MOVE", var1, var2);
 	}
-	void move(int var1, string &var2)
+	void move(int var1, const char *var2)
 	{
 		binary("MOVE", var1, var2);
 	}
-	void _not(string &op1, string &res)
+	void _not(const char *op1, const char *res)
 	{
 		binary("NOT", op1, res);
 	}
-	void add(string &op1, string &op2, string &res)
+	void add(const char *op1, const char *op2, const char *res)
 	{
 		ternary("ADD", op1, op2, res);
 	}
-	void sub(string &op1, string &op2, string &res)
+	void sub(const char *op1, const char *op2, const char *res)
 	{
 		ternary("SUB", op1, op2, res);
 	}
-	void lt(string &op1, string &op2, string &res)
+	void lt(const char *op1, const char *op2, const char *res)
 	{
 		ternary("LT", op1, op2, res);
 	}
-	void le(string &op1, string &op2, string &res)
+	void le(const char *op1, const char *op2, const char *res)
 	{
 		ternary("LE", op1, op2, res);
 	}
-	void gt(string &op1, string &op2, string &res)
+	void gt(const char *op1, const char *op2, const char *res)
 	{
 		ternary("GT", op1, op2, res);
 	}
-	void ge(string &op1, string &op2, string &res)
+	void ge(const char *op1, const char *op2, const char *res)
 	{
 		ternary("GE", op1, op2, res);
 	}
-	void eq(string &op1, string &op2, string &res)
+	void eq(const char *op1, const char *op2, const char *res)
 	{
 		ternary("EQ", op1, op2, res);
 	}
-	void eq(int op1, string &op2, string &res)
+	void eq(int op1, const char *op2, const char *res)
 	{
 		ternary("ADD", op1, op2, res);
 	}
-	void _or(string &op1, string &op2, string &res)
+	void _or(const char *op1, const char *op2, const char *res)
 	{
 		ternary("OR", op1, op2, res);
 	}
-	void _and(string &op1, string &op2, string &res)
+	void _and(const char *op1, const char *op2, const char *res)
 	{
 		ternary("AND", op1, op2, res);
 	}
 
 private:	 
-	void ternary(const char *cmd, string &op1, string &op2, string &op3)
+	void ternary(const char *cmd, const char *op1, const char *op2, const char *op3)
 	{
 		cout << cmd << "(" << op1 << "," << op2 << "," << op3 << ")";
 	}
-	void ternary(const char *cmd, int op1, string &op2, string &op3)
+	void ternary(const char *cmd, int op1, const char *op2, const char *op3)
 	{
 		cout << cmd << "(" << op1 << "," << op2 << "," << op3 << ")";
 	}
-	void binary(const char *cmd, string &op1, string &op2)
+	void binary(const char *cmd, const char *op1, const char *op2)
 	{
 		cout << cmd << "(" << op1 << "," << op2 << ")";
 	}
-	void binary(const char *cmd, int op1, string &op2)
+	void binary(const char *cmd, int op1, const char *op2)
 	{
 		cout << cmd << "(" << op1 << "," << op2 << ")";
 	}
@@ -304,9 +303,22 @@ void yyerror(const char *s)
 	return 1;
 }*/
 
-Assembler asmr();
+Assembler asmr;
 Memory mem(30);
+bool isTerm[6] = {false, false, false, false, false, false};
 
+void inTerm(int num, const char *&res, const char *&arg)
+{
+	cout << "Hello";
+	if (isTerm[num])
+	{
+		string *new_mem = new string(mem.numberToInnerName(mem.alloc()));  //memory leak
+		res = new_mem->data();
+		asmr.move(arg, new_mem->data());
+		isTerm[num] = false;
+	}
+	else { res = arg; }
+}
 int main()
 {
 	yyparse();
@@ -329,7 +341,7 @@ int main()
 %union
 {
 	int number;
-	string string;
+	const char *string;
 }
 
 %%
@@ -346,37 +358,78 @@ command :	assign
 		;
 assign :	NAME ASSIGN expr
 		;
-expr :		int_expr
+expr :		int_expr { $<string>$ = $<string>1; }
 		;
-int_expr:	int_expr OR term1
+int_expr:	term1 { isTerm[0] = true; } OR int_expr
 		{
+			asmr._or($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
 		}
-		| term1
+		| term1 { inTerm(0, $<string>$, $<string>1); }
 		;
-term1:		term1 AND term2
-		| term2
+term1:		term2 { isTerm[1] = true; } AND term1
+		{
+			asmr._and($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>1;
+		}
+		| term2 { inTerm(1, $<string>$, $<string>1); }
 		;
-term2:		term2 EQ term3
-		| term2 NEQ term3
-		| term3
+term2:		term3 { isTerm[2] = true; } EQ term2
+		{
+			asmr.eq($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
+		}
+		| term3 { inTerm(2, $<string>$, $<string>1); }
 		;
-term3:		term3 LT term4
-		| term3 LE term4
-		| term3 GT term4
-		| term3 GE term4
-		| term4
+term3:		term4 { isTerm[3] = true; } LT term3
+		{
+			asmr.lt($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
+		}
+		| term4 { isTerm[3] = true; } LE term3
+		{
+			asmr.le($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
+		}
+		| term4 { isTerm[3] = true; } GT term3
+		{
+			asmr.gt($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
+		}
+		| term4 { isTerm[3] = true; } GE term3
+		{
+			asmr.ge($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
+		}
+		| term4 { inTerm(3, $<string>$, $<string>1); }
 		;
-term4:		term4 ADD term5
-		| term4 SUB term5
-		| term5
-		;
-term5:		term5 MUL term6
-		| term5 DIV term6
-		| term6
+term4:		term6 { isTerm[4] = true; } ADD term4
+		{
+			asmr.add($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
+		}
+		| term6 { isTerm[4] = true; } SUB term4
+		{
+			asmr.sub($<string>3, $<string>1, $<string>3);
+			$<string>$ = $<string>3;
+		}
+		| term6 { inTerm(4, $<string>$, $<string>1); }
 		;
 term6:		NOT term7
+		{
+			string str = mem.numberToInnerName(mem.alloc());
+			asmr._not($<string>2, str.data());
+			$<string>$ = $<string>2;
+		}
+		| term7 { $<string>$ = $<string>1; }
 		;
 term7:		NUMBER
+		{
+			cout << "lol";
+			string str = mem.numberToInnerName(mem.alloc());
+			asmr.move($<number>1, str.data());
+			$<string>$ = str.data();
+		}
 		| NAME
 		| OBRACE expr CBRACE
 		;
