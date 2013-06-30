@@ -1,2 +1,2 @@
-init x;
-init y = 10 || 20;
+init x = 3;
+init y = !5*7;

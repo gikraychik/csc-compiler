@@ -26,7 +26,8 @@ public:
 			case 3: cout << "Memory::isFree: error: wrong int_name, it must have at least 1 digit in the end" << endl; break;
 			case 4: cout << "Memory::isFree: error: out of range" << endl;
 			case 5: cout << "Memory::free_mem: error: impossible to delete an undeclared variable" << endl; break;
-			case 6: cout << "Memory::free_cell: error: impossible to delete global variable" << endl; break;	
+			case 6: cout << "Memory::free_cell: error: impossible to delete global variable" << endl; break;
+			case 7: cout << "Memory::getInnerName: error: undeclared identifier in expression" << endl; break;	
 			default: cout << "Unexpected error" << endl; break;
 		}
 	}
@@ -93,11 +94,12 @@ public:
 	{
 		globals[innerNameToNumber(int_name)] = 1;
 	}
-	string getInnerName(string &ext_name)
+	string getInnerName(string &ext_name) throw(int)
 	{
 		if (names.find(ext_name) == names.end())  //not found
 		{
-			return string("");
+			throw 7;
+			//return string("");
 		}
 		return names[ext_name];
 	}
@@ -133,7 +135,13 @@ public:
 		try { free_cell(ext_name); }
 		catch (int e) { throw e; }
 	}
-
+	void free_cell(const char *int_name) throw(int)
+	{
+		string str(int_name);
+		int number = innerNameToNumber(str);
+		if (globals[number] == 1) { throw 6; }
+		allocated[number] = 0;
+	}
 	void print()
 	{
 		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
@@ -176,7 +184,6 @@ private:
 		allocated[number] = 0;
 		names.erase(ext_name);
 	}		
-	
 	void reverse(char s[])
 	{
 	    int i, j;
@@ -191,7 +198,7 @@ private:
  	{
      		int i, sign;
      		if ((sign = n) < 0)  /* записываем знак */
-        	n = -n;          /* делаем n положительным числом */
+        		n = -n;          /* делаем n положительным числом */
     		i = 0;
      		do {       /* генерируем цифры в обратном порядке */
          		s[i++] = n % 10 + '0';   /* берем следующую цифру */
@@ -268,19 +275,19 @@ public:
 private:	 
 	void ternary(const char *cmd, const char *op1, const char *op2, const char *op3)
 	{
-		cout << cmd << "(" << op1 << "," << op2 << "," << op3 << ")";
+		cout << cmd << "(" << op1 << ", " << op2 << ", " << op3 << ")" << endl;
 	}
 	void ternary(const char *cmd, int op1, const char *op2, const char *op3)
 	{
-		cout << cmd << "(" << op1 << "," << op2 << "," << op3 << ")";
+		cout << cmd << "(" << op1 << ", " << op2 << ", " << op3 << ")" << endl;
 	}
 	void binary(const char *cmd, const char *op1, const char *op2)
 	{
-		cout << cmd << "(" << op1 << "," << op2 << ")";
+		cout << cmd << "(" << op1 << ", " << op2 << ")" << endl;
 	}
 	void binary(const char *cmd, int op1, const char *op2)
 	{
-		cout << cmd << "(" << op1 << "," << op2 << ")";
+		cout << cmd << "(" << op1 << ", " << op2 << ")" << endl;
 	}
 };
 
@@ -305,25 +312,9 @@ void yyerror(const char *s)
 
 Assembler asmr;
 Memory mem(30);
-bool isTerm[6] = {false, false, false, false, false, false};
 
-void inTerm(int num, const char *&res, const char *&arg)
-{
-	cout << "Hello";
-	if (isTerm[num])
-	{
-		string *new_mem = new string(mem.numberToInnerName(mem.alloc()));  //memory leak
-		res = new_mem->data();
-		asmr.move(arg, new_mem->data());
-		isTerm[num] = false;
-	}
-	else { res = arg; }
-}
 int main()
 {
-	cout << "plpl";
-	int x = 29;
-	for (int i = 0; i < 100000000; i++) { x = x * x; }
 	yyparse();
 	mem.print();
 }
@@ -335,11 +326,13 @@ int main()
 %token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE DELETE
 %token GLOBAL DEFINE INIT AS
 
-%token AND OR
-%token NOT
-%token LT GT LE GE EQ NE
-%token ADD SUB
-%token MUL DIV
+%left OR
+%left AND
+%left LT GT LE GE
+%left EQ
+%left ADD SUB
+%left MUL DIV
+%left NOT
 
 %union
 {
@@ -363,101 +356,109 @@ assign :	NAME ASSIGN expr SEMICOLON
 		;
 expr :		int_expr { $<string>$ = $<string>1; }
 		;
-int_expr:	term1 { isTerm[0] = true; } OR int_expr
+int_expr:	int_expr ADD int_expr
 		{
-			asmr._or($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
-		}
-		| term1 { inTerm(0, $<string>$, $<string>1); }
-		;
-term1:		term2 { isTerm[1] = true; } AND term1
-		{
-			asmr._and($<string>3, $<string>1, $<string>3);
+			asmr.add($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
 			$<string>$ = $<string>1;
 		}
-		| term2 { inTerm(1, $<string>$, $<string>1); }
-		;
-term2:		term3 { isTerm[2] = true; } EQ term2
-		{
-			asmr.eq($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
+		| int_expr SUB int_expr
+		{			
+			asmr.sub($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
 		}
-		| term3 { inTerm(2, $<string>$, $<string>1); }
-		;
-term3:		term4 { isTerm[3] = true; } LT term3
-		{
-			asmr.lt($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
+		| int_expr OR int_expr
+		{			
+			asmr._or($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
 		}
-		| term4 { isTerm[3] = true; } LE term3
-		{
-			asmr.le($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
+		| int_expr AND int_expr
+		{			
+			asmr._and($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
 		}
-		| term4 { isTerm[3] = true; } GT term3
-		{
-			asmr.gt($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
+		| int_expr EQ int_expr
+		{			
+			asmr.eq($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
 		}
-		| term4 { isTerm[3] = true; } GE term3
-		{
-			asmr.ge($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
+		| int_expr LT int_expr
+		{			
+			asmr.lt($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
 		}
-		| term4 { inTerm(3, $<string>$, $<string>1); }
-		;
-term4:		term6 { isTerm[4] = true; } ADD term4
-		{
-			asmr.add($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
+		| int_expr LE int_expr
+		{			
+			asmr.le($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
 		}
-		| term6 { isTerm[4] = true; } SUB term4
-		{
-			asmr.sub($<string>3, $<string>1, $<string>3);
-			$<string>$ = $<string>3;
+		| int_expr GT int_expr
+		{			
+			asmr.gt($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
 		}
-		| term6 { inTerm(4, $<string>$, $<string>1); }
-		;
-term6:		NOT term7
+		| int_expr GE int_expr
+		{			
+			asmr.ge($<string>1, $<string>3, $<string>1);
+			mem.free_cell($<string>3);
+			$<string>$ = $<string>1;
+		}
+		| NOT int_expr
 		{
-			string str = mem.numberToInnerName(mem.alloc());
-			asmr._not($<string>2, str.data());
+			asmr._not($<string>2, $<string>2);
 			$<string>$ = $<string>2;
 		}
-		| term7 { $<string>$ = $<string>1; }
-		;
-term7:		NUMBER
+		| NUMBER
 		{
-			cout << "lol";
-			string str = mem.numberToInnerName(mem.alloc());
-			asmr.move($<number>1, str.data());
-			$<string>$ = str.data();
+			string *str = new string(mem.numberToInnerName(mem.alloc()));  //memory leak
+			asmr.move($<number>1, str->data());
+			$<string>$ = str->data();
 		}
 		| NAME
-		| OBRACE expr CBRACE
+		{
+			string ext_name($<string>1);
+			string *int_name;
+			try { int_name = new string(mem.getInnerName(ext_name)); }  //memory leak
+			catch (int e) { Error::error(e); break; }
+			string *new_mem = new string(mem.numberToInnerName(mem.alloc()));  //memory leak
+			asmr.move(int_name->data(), new_mem->data());
+			$<string>$ = new_mem->data();
+		}
+		| OBRACE int_expr CBRACE
+		{
+			$<string>$ = $<string>2;
+		}
 		;
 decl:		INIT NAME ASSIGN expr SEMICOLON
+		{
+			string str($<string>2);
+			string *new_mem;
+			try { new_mem = new string(mem.alloc(str)); }  //memory leak
+			catch (int e) { Error::error(e); break; }
+			asmr.move($<string>4, new_mem->data());
+			mem.free_cell($<string>4);
+		}
 		| INIT NAME SEMICOLON
 		{
 			string str($<string>2);
-			try
-			{			
-				mem.alloc(str);
-			}
-			catch (int e)
-			{
-				Error::error(e);
-				break;
-			}
+			try { mem.alloc(str); }
+			catch (int e) { Error::error(e); break; }
 		}
 		| INIT GLOBAL NAME ASSIGN SEMICOLON
 		| INIT GLOBAL NAME SEMICOLON
 		{
 			string str($<string>3);
-			string int_name;
+			string *int_name;
 			try
 			{			
-				int_name = mem.alloc(str);
+				int_name = new string(mem.alloc(str));  //memory leak
 			}
 			catch (int e)
 			{
