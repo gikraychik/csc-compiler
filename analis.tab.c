@@ -130,6 +130,18 @@ public:
 		else { throw 2; }
 		return names[ext_name];
 	}
+	int alloc() throw (int)  //allocates memory if no ext_name
+	{
+		int res;
+		try { res = alloc_mem(); }
+		catch (int e)
+		{
+			if (e == 1) { }  //out of memory
+			else { Error::error(e); }
+		}
+		return res;
+	}
+
 	bool isFree(int number) throw(int)
 	{
 		if ((number < 0) || (number >= cap)) { throw 4; }
@@ -188,7 +200,8 @@ public:
 		{
 			throw 5;
 		}
-		free_mem(ext_name);
+		try { free_cell(ext_name); }
+		catch (int e) { throw e; }
 	}
 
 	void print()
@@ -233,7 +246,7 @@ private:
 		allocated[number] = 0;
 		names.erase(ext_name);
 	}		
-
+	
 	void reverse(char s[])
 	{
 	    int i, j;
@@ -371,7 +384,7 @@ int main()
 
 
 /* Line 268 of yacc.c  */
-#line 375 "analis.tab.c"
+#line 388 "analis.tab.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -454,7 +467,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 317 "analis.y"
+#line 330 "analis.y"
 
 	int number;
 	char *string;
@@ -462,7 +475,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 466 "analis.tab.c"
+#line 479 "analis.tab.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -474,7 +487,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 478 "analis.tab.c"
+#line 491 "analis.tab.c"
 
 #ifdef short
 # undef short
@@ -782,11 +795,11 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   323,   323,   324,   326,   327,   329,   330,   331,   332,
-     334,   336,   338,   339,   341,   342,   344,   345,   346,   348,
-     349,   350,   351,   352,   354,   355,   356,   358,   359,   360,
-     362,   364,   365,   366,   368,   369,   382,   383,   398,   400,
-     406,   407
+       0,   336,   336,   337,   339,   340,   342,   343,   344,   345,
+     347,   349,   351,   354,   356,   357,   359,   360,   361,   363,
+     364,   365,   366,   367,   369,   370,   371,   373,   374,   375,
+     377,   379,   380,   381,   383,   384,   397,   398,   413,   415,
+     421,   422
 };
 #endif
 
@@ -1766,10 +1779,18 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 35:
+        case 12:
 
 /* Line 1806 of yacc.c  */
-#line 370 "analis.y"
+#line 352 "analis.y"
+    {
+		}
+    break;
+
+  case 35:
+
+/* Line 1806 of yacc.c  */
+#line 385 "analis.y"
     {
 			string str((yyvsp[(2) - (3)].string));
 			try
@@ -1787,7 +1808,7 @@ yyreduce:
   case 37:
 
 /* Line 1806 of yacc.c  */
-#line 384 "analis.y"
+#line 399 "analis.y"
     {
 			string str((yyvsp[(3) - (4)].string));
 			string int_name;
@@ -1807,18 +1828,18 @@ yyreduce:
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 401 "analis.y"
+#line 416 "analis.y"
     {
-			string ext_name = string((yyvsp[(2) - (3)].string));
+			string ext_name = string((yyvsp[(2) - (3)].string));                 // this block need to be tested		
 			try { mem.free_mem(ext_name); }
-			catch (int e) { Error::error(e); }
+			catch (int e) { Error::error(e); break; }
 		}
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1822 "analis.tab.c"
+#line 1843 "analis.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2049,6 +2070,6 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 409 "analis.y"
+#line 424 "analis.y"
 
 

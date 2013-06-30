@@ -1,3 +1,5 @@
 init x;
-init lol;
-init global p;
+init global y;
+init z;
+delete x;
+init count;

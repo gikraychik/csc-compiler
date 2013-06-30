@@ -61,6 +61,18 @@ public:
 		else { throw 2; }
 		return names[ext_name];
 	}
+	int alloc() throw (int)  //allocates memory if no ext_name
+	{
+		int res;
+		try { res = alloc_mem(); }
+		catch (int e)
+		{
+			if (e == 1) { }  //out of memory
+			else { Error::error(e); }
+		}
+		return res;
+	}
+
 	bool isFree(int number) throw(int)
 	{
 		if ((number < 0) || (number >= cap)) { throw 4; }
@@ -119,7 +131,8 @@ public:
 		{
 			throw 5;
 		}
-		free_mem(ext_name);
+		try { free_cell(ext_name); }
+		catch (int e) { throw e; }
 	}
 
 	void print()
@@ -164,7 +177,7 @@ private:
 		allocated[number] = 0;
 		names.erase(ext_name);
 	}		
-
+	
 	void reverse(char s[])
 	{
 	    int i, j;
@@ -336,6 +349,8 @@ assign :	NAME ASSIGN expr
 expr :		int_expr
 		;
 int_expr:	int_expr OR term1
+		{
+		}
 		| term1
 		;
 term1:		term1 AND term2
@@ -399,9 +414,9 @@ decl:		INIT NAME ASSIGN expr SEMICOLON
 		;
 delete:		DELETE NAME SEMICOLON
 		{
-			string ext_name = string($<string>2);                 // this block need to be tested
+			string ext_name = string($<string>2);                 // this block need to be tested		
 			try { mem.free_mem(ext_name); }
-			catch (int e) { Error::error(e); }
+			catch (int e) { Error::error(e); break; }
 		}	
 condition :	IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
 		| IF OBRACE expr CBRACE OBLOCK commands CBLOCK
