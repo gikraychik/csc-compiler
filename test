@@ -3,7 +3,7 @@ define lol as VIDEO_MODE;
 
 label 1;
 
-init x = 0;
-if (x) { print(10, 2); }
-
+init x = 2;
+init y = 3;
+init z = x + y + 5;
 goto 1;

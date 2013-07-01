@@ -9,6 +9,7 @@
 #include <stack>
 #include <set>
 #include <ostream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -357,6 +358,7 @@ void yyerror(const char *s)
 Memory mem(30);
 Assembler asmr(&mem);
 
+
 void print(char c, int number)
 {
 	string where("LED");
@@ -368,6 +370,52 @@ void print(char c, int number)
 	asmr.cl(what.data(), where.data());
 	mem.free_cell(what.data());
 }
+int indexOfSht(const char *str) { return strlen(str) - 1; }
+bool isVar(const char *str) { return str[indexOfSht(str)] == '$'; }
+void swap(const char *&x, const char *&y) { const char *z = x; x = y; y = z; }
+void delSht(char *str) { str[indexOfSht(str)] = 0; }
+void setSht(const char *&str)
+{
+	cout << "lol";
+	char *s = (char *)malloc((strlen(str)+2)*sizeof(char)); 
+	int i = 0;
+	while (str[i] != '0') { s[i] = str[i]; i++; }
+	s[i] = '$'; i++; s[i] = 0;
+	str = s;
+}
+void inExpr(const char *&int_name1, const char *&int_name2, const char *&res)
+{
+	bool b1 = isVar(int_name1);
+	bool b2 = isVar(int_name2);
+	char *var1 = strdup(int_name1);  //memory leak
+	char *var2 = strdup(int_name2);  //memory leak	
+	if (b1) { delSht(var1); }
+	if (b2) { delSht(var2); }
+	/*string s1(var1);
+	string s2(var2);
+	const char *int_name1 = mem.getInnerName(s1).data();
+	const char *int_name2 = mem.getInnerName(s2).data();*/
+	cout << var1 << " ! " << var2 << endl;
+	string *new_mem;
+	if (b1 && b2)
+	{
+		new_mem = new string(mem.numberToInnerName(mem.alloc()));  //memory leak
+		res = new_mem->data();
+	}
+	else if (b1|| b2)
+	{
+		if (b2) { swap(var1, var2); bool tmp = b1; b1 = b2; b2 = tmp; }  //now b1 == true && b2 == false
+		res = var2;
+	}
+	else
+	{
+		res = var2;
+		mem.free_cell(var1);
+	}
+	int_name1 = var1;
+	int_name2 = var2;
+}
+
 int main()
 {
 	yyparse();
@@ -430,9 +478,11 @@ expr :		int_expr { $<string>$ = $<string>1; }
 		;
 int_expr:	int_expr ADD int_expr
 		{
-			asmr.add($<string>1, $<string>3, $<string>1);
+			/*asmr.add($<string>1, $<string>3, $<string>1);
 			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			$<string>$ = $<string>1;*/
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr.add($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr SUB int_expr
 		{			
@@ -495,13 +545,19 @@ int_expr:	int_expr ADD int_expr
 		}
 		| NAME
 		{
-			string ext_name($<string>1);
+			/*string ext_name($<string>1);
 			string *int_name;
 			try { int_name = new string(mem.getInnerName(ext_name)); }  //memory leak
 			catch (int e) { Error::error(e); break; }
 			string *new_mem = new string(mem.numberToInnerName(mem.alloc()));  //memory leak
-			asmr.move(int_name->data(), new_mem->data());
-			$<string>$ = new_mem->data();
+			asmr.move(int_name->data(), new_mem->data());*/
+			//$<string>$ = new_mem->data();
+			string str = string($<string>1);
+			string p = mem.getInnerName(str);
+			string s = p + string("$");
+			string *res = new string(s.data());  //memory leak
+			$<string>$ = res->data();
+			
 		}
 		| OBRACE int_expr CBRACE
 		{
