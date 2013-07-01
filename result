@@ -1,0 +1,16 @@
+IMOVE(10, TMP1)
+IMOVE(3, TMP2)
+ADD(TMP1, TMP2, TMP2)
+IMOVE(9, TMP1)
+IMOVE(2, NETLIST_SELECT)
+**************************************************
+Locals: 
+1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+Globals:
+1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+Names:
+e -> TMP0
+lol -> VIDEO_MODE
+video -> VIDEO_MODE
+y -> TMP2
+**************************************************

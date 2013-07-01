@@ -1,14 +1,29 @@
-define video as VIDEO_MODE;
-define lol as VIDEO_MODE;
+define ind1 as IND1;
+define ind2 as IND2;
+define ind3 as IND3;
+define ind4 as IND4;
+define s1 as S1;
+define s2 as S2;
+define s3 as S3;
+define s4 as S4;
+define dout as DOUT;
+define t1 as T1;
+define t2 as T2;
+define t3 as T3;
+define t4 as T4;
+define isStand as CTRL_STATE;
+define checkSum as EE_SUM;
+
+
+label 0;
+s1 = 1; ind2 = 1; ind3 = 1;
+init x = t3 + t4 + isStand + checkSum == 12580;
+x = x ? 1 : 2;
+goto x;
+delete x;
 
 label 1;
-
-init x = 10;
-init y = x + 2;
-init z;
-if (x + y) {
-	if (x-y) { z = x; }
-	y = z + 3;
-}
-
-goto 1;
+init x;
+x = isStand ? 4 : 5;
+goto x;
+delete x;

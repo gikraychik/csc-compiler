@@ -74,18 +74,19 @@
      PRINT = 292,
      SYMBOL = 293,
      ERASE = 294,
-     OR = 295,
-     AND = 296,
-     GE = 297,
-     LE = 298,
-     GT = 299,
-     LT = 300,
-     EQ = 301,
-     SUB = 302,
-     ADD = 303,
-     DIV = 304,
-     MUL = 305,
-     NOT = 306
+     QUEST = 295,
+     OR = 296,
+     AND = 297,
+     GE = 298,
+     LE = 299,
+     GT = 300,
+     LT = 301,
+     EQ = 302,
+     SUB = 303,
+     ADD = 304,
+     DIV = 305,
+     MUL = 306,
+     NOT = 307
    };
 #endif
 
@@ -96,7 +97,7 @@ typedef union YYSTYPE
 {
 
 /* Line 2068 of yacc.c  */
-#line 441 "analis.y"
+#line 461 "analis.y"
 
 	int number;
 	const char *string;
@@ -104,7 +105,7 @@ typedef union YYSTYPE
 
 
 /* Line 2068 of yacc.c  */
-#line 108 "analis.tab.h"
+#line 109 "analis.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

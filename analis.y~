@@ -10,6 +10,7 @@
 #include <set>
 #include <ostream>
 #include <cstdlib>
+#include <fstream>
 
 using namespace std;
 
@@ -101,6 +102,11 @@ public:
 	void define(string &ext_name, string &int_name)
 	{
 		names[ext_name] = int_name;
+	}
+	bool isDefine(const char *name)
+	{
+		string s(name);
+		return *(names[s].data()) != 'T';
 	}
 	string getInnerName(string &ext_name) throw(int)
 	{
@@ -231,9 +237,19 @@ class Assembler
 public:
 	Assembler(Memory *mem)
 	{
-		this->mem = mem;	
+		this->mem = mem;
+			
 	}
 	~Assembler() { }
+	void assignOutput(int number, filebuf *fb)
+	{
+		/*char *tmp = (char *)malloc(33*sizeof(char));
+		tmp = itoa(number, tmp);
+		string s = string(tmp) + string(".nlt");
+		free(tmp);
+		fb.open(s.data(), std::ios::out);
+		os(&fb);*/
+	}
 	void move(const char *var1, const char *var2)
 	{
 		if (!mem->ifs.empty())
@@ -311,7 +327,10 @@ public:
 	{
 		quadro("MUX2", op1, op2, op3, op4);
 	}
-
+	void imux2(const char *op1, const char *op2, int op3, int op4)
+	{
+		cout << "IMUX2" << "(" << op1 << ", " << op2 << ", " << op3 << ", " << op4 << ")" << endl;
+	}
 private:	 
 	void ternary(const char *cmd, const char *op1, const char *op2, const char *op3)
 	{
@@ -334,6 +353,7 @@ private:
 		cout << cmd << "(" << op1 << ", " << op2 << ")" << endl;
 	}
 	Memory *mem;
+	//ostream os;
 };
 
 extern "C"
@@ -427,7 +447,7 @@ int main()
 %token IF WHILE LOOP POOL READ WRITE NEQ
 %token LABEL RECOPENBRACE RECCLOSEBRACE
 %token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE DELETE
-%token GLOBAL DEFINE INIT AS QUOTE PRINT SYMBOL ERASE
+%token GLOBAL DEFINE INIT AS QUOTE PRINT SYMBOL ERASE QUEST
 
 %left OR
 %left AND
@@ -452,7 +472,12 @@ files :		files file
 		| file
 		;
 file :		LABEL NUMBER SEMICOLON
+		commands goto delete
+		{ for (int i = 0; i < 80; i++) { cout << '*'; } cout << endl; }
+		|
+		LABEL NUMBER SEMICOLON
 		commands goto
+		{ for (int i = 0; i < 80; i++) { cout << '*'; } cout << endl; }
 		;
 commands :	commands command
 		| command
@@ -464,11 +489,19 @@ command :	assign
 		| print
 		| define
 		| erase
+		| tern
 		;
 assign :	NAME ASSIGN expr SEMICOLON
 		{
 			if (mem.ifs.empty())
 			{
+				if (mem.isDefine($<string>1))
+				{
+					tmp = string($<string>1);
+					string *int_name = new string(mem.getInnerName(tmp));  //memory leak
+					asmr.move($<string>3, int_name->data());
+					if (!isV) { mem.free_cell($<string>3); }
+				}
 				string tmp($<string>1);
 				if (isV)
 				{
@@ -595,10 +628,8 @@ int_expr:	int_expr ADD int_expr
 		;
 decl:		INIT NAME ASSIGN expr SEMICOLON
 		{
-			bool isV = isVar($<string>4);
 			string *new_mem;
 			string str($<string>2);
-			if (isV) { char *s = strdup($<string>4); delSht(s); $<string>4 = s; }  //memory leak
 			if (isV)
 			{
 				try { new_mem = new string(mem.alloc(str)); }  //memory leak
@@ -611,6 +642,7 @@ decl:		INIT NAME ASSIGN expr SEMICOLON
 				string *int_name = new string($<string>4);  //memory leak
 				mem.define(*ext_name, *int_name);
 			}
+			isV = false;
 			/*string *new_mem;
 			try { new_mem = new string(mem.alloc(str)); }  //memory leak
 			catch (int e) { Error::error(e); break; }
@@ -655,9 +687,11 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 			asmr.cd($<string>3, where.data());
 		}*/
 		;
-goto :		GOTO NUMBER SEMICOLON
+goto :		GOTO expr SEMICOLON
 		{
-			asmr.move($<number>2, "NETLIST_SELECT");
+			asmr.move($<string>2, "NETLIST_SELECT");
+			if (!isV) { mem.free_cell($<string>2); }
+			isV = false;
 		}
 		;
 globals:	INIT GLOBAL NAME ASSIGN expr SEMICOLON
@@ -704,6 +738,15 @@ erase :		ERASE NAME SEMICOLON
 			catch (int e) { Error::error(e); }
 		}
 		;
+tern :		NAME ASSIGN NAME QUEST NUMBER COLON NUMBER SEMICOLON
+		{
+			string res($<string>1);
+			string cond($<string>3);
+			string s1 = mem.getInnerName(res);
+			string s2 = mem.getInnerName(cond);
+			asmr.imux2(s2.data(), s1.data(), $<number>7, $<number>5);
+		}
+		;
 block :		OBLOCK commands CBLOCK
 		//| command
 		;	
@@ -721,7 +764,7 @@ condition :	//IF OBRACE expr CBRACE block ELSE block
 			else
 			{			
 				new_mem = new string(mem.numberToInnerName(mem.alloc()));  //for stack
-				//asmr.move(int_name->data(), new_mem->data());
+				//asmr.move(int_name->data(), new_mem->data());  //may be should be returned
 			}
 			if (mem.ifs.empty())
 			{

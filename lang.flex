@@ -66,6 +66,7 @@ WSN [ \t\n]*
 	";"{WSN}				{ /*printf("SEMICOLON");*/ return SEMICOLON; }
 	"("{WSN}				{ return OBRACE; }
 	")"{WSN}				{ return CBRACE; }
+	"?"{WSN}				{ return QUEST; }
 	{NAME}{WSN}				{
 							char *s = yytext;
 							while (1) {
