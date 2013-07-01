@@ -62,38 +62,20 @@ AND(TMP4, TMP1, TMP5)
 IMOVE(1, TMP6)
 MUX2(TMP5, TMP3, TMP3, TMP6)
 MOVE(TMP3, VIDEO_MODE)
-IMOVE(1, TMP0)
+IMOVE(3, TMP0)
 MOVE(TMP0, NETLIST_SELECT)
 ********************************************************************************
-**************************************************
-Locals: 
-0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-Globals:
-0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
-Names:
-checkSum -> EE_SUM
-dout -> DOUT
-down -> BTN_DOWN
-enter -> BTN_ENTR_STATUS
-ind1 -> IND1
-ind2 -> IND2
-ind3 -> IND3
-ind4 -> IND4
-isStand -> CTRL_STATE
-led0 -> LED0
-led1 -> LED1
-led2 -> LED2
-led3 -> LED3
-long_down -> LONG_BTN_DOWN
-long_up -> LONG_BTN_UP
-s1 -> S1
-s2 -> S2
-s3 -> S3
-s4 -> S4
-t1 -> T1
-t2 -> T2
-t3 -> T3
-t4 -> T4
-up -> BTN_UP
-video -> VIDEO_MODE
-**************************************************
+MOVE(T1, TMP0)
+MOVE(T2, TMP1)
+MOVE(T3, TMP2)
+MOVE(S2, TMP3)
+IMOVE(15, TMP4)
+GE(TMP0, TMP4, TMP4)
+IMOVE(1, TMP5)
+ADD(TMP2, TMP5, TMP5)
+GE(TMP1, TMP5, TMP5)
+AND(TMP4, TMP5, TMP5)
+IMUX2(TMP5, TMP3, 0, 1)
+IMUX2(TMP5, TMP4, 0, 1)
+MOVE(TMP4, IND4)
+MOVE(S3, TMP4)

@@ -62,4 +62,50 @@ delete u;
 delete d;
 video = v;
 delete v;
-goto 1;
+goto 3;
+
+label 3;
+
+init outside = t1;
+init inside = t2;
+init desired = t3;
+init rele2 = s2;
+
+init tmp = (outside >= 15) && (inside >= desired + 1);
+init i4;
+rele2 = tmp ? 1 : 0;
+i4 = tmp ? 1 : 0;
+delete tmp;
+ind4 = i4;
+delete i4;
+
+init rele3 = s3;
+init i5 = ind5;
+init tmp = (outside >= 0-5) && (outside <= 20);
+if (tmp && (inside < desired - 1)) { rele2 = 1; rele3 = 1; i5 = 1; }
+if (!tmp || (inside >= desired)) { rele2 = 0; rele3 = 0; i5 = 0; }
+delete tmp;
+ind5 = i5;
+delete i5;
+
+init rele4 = s4;
+i4 = ind4;
+init tmp = (outside >= 18);
+if (tmp && (inside >= desired + 1)) { rele4 = 1; i4 = 1; }
+if (!tmp || (inside < desired)) { rele4 = 0; i4 = 0; }
+delete tmp;
+ind4 = i4;
+delete i4;
+
+s2 = rele2; s3 = rele3; s4 = rele4;
+delete rele2;
+delete rele3;
+delete rele4;
+delete inside;
+delete outside;
+delete desired;
+goto 2;
+
+
+
+
