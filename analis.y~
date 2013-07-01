@@ -29,7 +29,8 @@ public:
 			case 6: cout << "Memory::free_cell: error: impossible to delete global variable" << endl; break;
 			case 7: cout << "Memory::getInnerName: error: undeclared identifier in expression" << endl; break;
 			case 8: cout << "Error: argument of print must have 4 symbols only" << endl; break;
-			case 9: cout << "Error: nowhere to print; call LED0 - LED4" << endl; break;	
+			case 9: cout << "Error: nowhere to print; call LED0 - LED4" << endl; break;
+			case 10: cout << "Memory::erase: error: imposible to delete an undeclared definition" << endl; break;
 			default: cout << "Unexpected error" << endl; break;
 		}
 	}
@@ -148,6 +149,12 @@ public:
 		if (globals[number] == 1) { throw 6; }
 		allocated[number] = 0;
 	}
+	void erase(string &ext_name) throw(int)
+	{
+		if (names.find(ext_name) == names.end())  //not found
+		{ throw 10; }
+		names.erase(ext_name);
+	}
 	void print()
 	{
 		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
@@ -183,6 +190,7 @@ public:
      		reverse(s);
 		return s;
 	}
+	stack<string *> ifs;
 private:
 	map<string, string> names;
 	int cap;  //how much memory we have
@@ -220,16 +228,30 @@ private:
 class Assembler
 {
 public:
-	Assembler()
-	{	
+	Assembler(Memory *mem)
+	{
+		this->mem = mem;	
 	}
 	~Assembler() { }
 	void move(const char *var1, const char *var2)
 	{
-		binary("MOVE", var1, var2);
+		if (!mem->ifs.empty())
+		{
+			string *int_name = mem->ifs.top();
+			mux2(int_name->data(), var2, var2, var1);
+		}
+		else { binary("MOVE", var1, var2); }
 	}
 	void move(int var1, const char *var2)
 	{
+		/*if (!mem->ifs.empty())
+		{
+			string *int_name = mem->ifs.top();
+			string new_mem = mem->numberToInnerName(mem->alloc());
+			binary("IMOVE", var1, new_mem.data());
+			mux2(int_name->data(), var2, var2, new_mem.data());
+		}
+		else { binary("IMOVE", var1, var2); }*/
 		binary("IMOVE", var1, var2);
 	}
 	void _not(const char *op1, const char *res)
@@ -284,6 +306,10 @@ public:
 	{
 		binary("CD", what, where);
 	}
+	void mux2(const char *op1, const char *op2, const char *op3, const char *op4)
+	{
+		quadro("MUX2", op1, op2, op3, op4);
+	}
 
 private:	 
 	void ternary(const char *cmd, const char *op1, const char *op2, const char *op3)
@@ -294,6 +320,10 @@ private:
 	{
 		cout << cmd << "(" << op1 << ", " << op2 << ", " << op3 << ")" << endl;
 	}
+	void quadro(const char *cmd, const char *op1, const char *op2, const char *op3, const char *op4)
+	{
+		cout << cmd << "(" << op1 << ", " << op2 << ", " << op3 << ", " << op4 << ")" << endl;
+	}
 	void binary(const char *cmd, const char *op1, const char *op2)
 	{
 		cout << cmd << "(" << op1 << ", " << op2 << ")" << endl;
@@ -302,6 +332,7 @@ private:
 	{
 		cout << cmd << "(" << op1 << ", " << op2 << ")" << endl;
 	}
+	Memory *mem;
 };
 
 extern "C"
@@ -323,8 +354,8 @@ void yyerror(const char *s)
 	return 1;
 }*/
 
-Assembler asmr;
 Memory mem(30);
+Assembler asmr(&mem);
 
 void print(char c, int number)
 {
@@ -348,7 +379,7 @@ int main()
 %token IF WHILE LOOP POOL READ WRITE NEQ
 %token LABEL RECOPENBRACE RECCLOSEBRACE
 %token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE DELETE
-%token GLOBAL DEFINE INIT AS QUOTE PRINT SYMBOL
+%token GLOBAL DEFINE INIT AS QUOTE PRINT SYMBOL ERASE
 
 %left OR
 %left AND
@@ -367,7 +398,13 @@ int main()
 %%
 program :	define program
 		| globals program
-		| commands
+		| files
+		;
+files :		files file
+		| file
+		;
+file :		LABEL NUMBER SEMICOLON
+		commands goto
 		;
 commands :	commands command
 		| command
@@ -377,8 +414,17 @@ command :	assign
 		| decl
 		| delete
 		| print
+		| define
+		| erase
 		;
 assign :	NAME ASSIGN expr SEMICOLON
+		{
+			string tmp($<string>1);
+			string where = mem.getInnerName(tmp);			
+			asmr.move($<string>3, where.data());
+			//cout << "!" << $<string>3 << "!" << endl;
+			mem.free_cell($<string>3);
+		}
 		;
 expr :		int_expr { $<string>$ = $<string>1; }
 		;
@@ -503,12 +549,17 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 			asmr.cd($<string>3, where.data());
 			mem.free_cell($<string>3);
 		}
-		| PRINT OBRACE NAME COMA NUMBER CBRACE SEMICOLON
+		/*| PRINT OBRACE NAME COMA NUMBER CBRACE SEMICOLON
 		{
 			char *tmp = (char *)malloc(33*sizeof(char));
 			string where = string("LED") + string(mem.itoa($<number>5, tmp));
 			free(tmp);
 			asmr.cd($<string>3, where.data());
+		}*/
+		;
+goto :		GOTO NUMBER SEMICOLON
+		{
+			asmr.move($<number>2, "NETLIST_SELECT");
 		}
 		;
 globals:	INIT GLOBAL NAME ASSIGN expr SEMICOLON
@@ -547,8 +598,40 @@ delete:		DELETE NAME SEMICOLON
 			try { mem.free_mem(ext_name); }
 			catch (int e) { Error::error(e); break; }
 		}
+		;
+erase :		ERASE NAME SEMICOLON
+		{
+			string ext_name($<string>2);
+			try { mem.erase(ext_name); }
+			catch (int e) { Error::error(e); }
+		}
+		;
+block :		OBLOCK commands CBLOCK
+		//| command
 		;	
-condition :	IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-		| IF OBRACE expr CBRACE OBLOCK commands CBLOCK
+condition :	//IF OBRACE expr CBRACE block ELSE block
+		IF OBRACE NAME
+		{
+			string tmp($<string>3);
+			string *int_name = new string(mem.getInnerName(tmp));
+			string *new_mem = new string(mem.numberToInnerName(mem.alloc()));
+			asmr.move(int_name->data(), new_mem->data());
+			if (mem.ifs.empty())
+			{
+				mem.ifs.push(new_mem);
+			}
+			else
+			{
+				string *top = mem.ifs.top();
+				asmr._and(int_name->data(), top->data(), new_mem->data());
+				mem.ifs.push(new_mem);
+			}
+		}
+		CBRACE block
+		{
+			mem.free_cell(mem.ifs.top()->data());
+			delete mem.ifs.top();
+			mem.ifs.pop();
+		}
 		;
 %%

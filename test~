@@ -1,4 +1,9 @@
 define video as VIDEO_MODE;
-init xYzPPk = 10;
-init x = 20;
-print(x, 2);
+define lol as VIDEO_MODE;
+
+label 1;
+
+init x = 0;
+if (x) { print("lool"); }
+
+goto 1;

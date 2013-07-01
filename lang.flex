@@ -34,6 +34,7 @@ WSN [ \t\n]*
 	"init"{WS}				{ return INIT; }
 	"as"{WS}				{ return AS; }
 	"delete"{WS}				{ return DELETE; }
+	"erase"{WS}				{ return ERASE; }
 	{QUOTE}{STRINGCONST}{QUOTE}{WSN}	{ 
 							*yytext = 0; yytext++;
 							char *s = yytext;
