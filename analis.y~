@@ -105,9 +105,17 @@ public:
 	}
 	bool isDefine(const char *name)
 	{
-		string s(name);
-		return *(names[s].data()) != 'T';
+		string str(name);
+		return defs.find(name) != defs.end();
 	}
+	void addDef(const char *name, const char *im)
+	{
+		string s(name);
+		defs.insert(s);
+		string Im(im);
+		names[s] = Im;
+	}
+	
 	string getInnerName(string &ext_name) throw(int)
 	{
 		if (names.find(ext_name) == names.end())  //not found
@@ -161,6 +169,7 @@ public:
 		if (names.find(ext_name) == names.end())  //not found
 		{ throw 10; }
 		names.erase(ext_name);
+		if (isDefine(ext_name.data())) { defs.erase(ext_name.data()); }
 	}
 	void print()
 	{
@@ -198,6 +207,7 @@ public:
 		return s;
 	}
 	stack<string *> ifs;
+	set<string> defs;
 private:
 	map<string, string> names;
 	int cap;  //how much memory we have
@@ -497,11 +507,13 @@ assign :	NAME ASSIGN expr SEMICOLON
 			{
 				if (mem.isDefine($<string>1))
 				{
-					tmp = string($<string>1);
+					cout << "lol";
+					string tmp = string($<string>1);
 					string *int_name = new string(mem.getInnerName(tmp));  //memory leak
 					asmr.move($<string>3, int_name->data());
 					if (!isV) { mem.free_cell($<string>3); }
 				}
+				else {
 				string tmp($<string>1);
 				if (isV)
 				{
@@ -516,7 +528,7 @@ assign :	NAME ASSIGN expr SEMICOLON
 					string *int_name = new string($<string>3);
 					mem.define(tmp, *int_name);	
 				}
-				//mem.free_cell($<string>3);
+				}  	//mem.free_cell($<string>3);
 			}
 			else
 			{
@@ -721,7 +733,7 @@ define:		DEFINE NAME AS NAME SEMICOLON
 		{
 			string *ext_name = new string($<string>2);  //memory leak
 			string *int_name = new string($<string>4);  //memory leak
-			mem.define(*ext_name, *int_name);
+			mem.addDef($<string>2, $<string>4);
 		}
 		;
 delete:		DELETE NAME SEMICOLON

@@ -1,0 +1,7 @@
+label 1;
+init x = 2;
+define y as TMP20;
+y = 5;
+delete y;
+
+goto 7;

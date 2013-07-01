@@ -27,3 +27,19 @@ init x;
 x = isStand ? 4 : 5;
 goto x;
 delete x;
+
+label 2;
+t3 = 24;
+isStand = 1;
+define z as TMP20;
+z = 4;
+delete z;
+goto 3;
+
+label 3;
+define y as TMP20;
+init x = 12580 - (t3 + t4 + isStand);
+checkSum = x;
+delete x;
+goto y;
+delete y;
