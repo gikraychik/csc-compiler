@@ -1,2 +1,4 @@
-init x = 3;
-init y = 7+!5;
+define video as VIDEO_MODE;
+init xYzPPk = 10;
+init x = 20;
+print(x, 2);

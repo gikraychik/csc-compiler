@@ -2,10 +2,8 @@ Terminals unused in grammar
 
    REF
    COLON
-   STRINGCONST
    STRING
    INTEGER
-   COMA
    RETURN
    WHILE
    LOOP
@@ -18,6 +16,7 @@ Terminals unused in grammar
    RECCLOSEBRACE
    THEN
    GOTO
+   QUOTE
    DIV
    MUL
 
@@ -26,64 +25,71 @@ Grammar
 
     0 $accept: program $end
 
-    1 program: /* empty */
-    2        | commands
+    1 program: define program
+    2        | globals program
+    3        | commands
 
-    3 commands: commands command
-    4         | command
+    4 commands: commands command
+    5         | command
 
-    5 command: assign
-    6        | condition
-    7        | decl
-    8        | delete
+    6 command: assign
+    7        | condition
+    8        | decl
+    9        | delete
+   10        | print
 
-    9 assign: NAME ASSIGN expr SEMICOLON
+   11 assign: NAME ASSIGN expr SEMICOLON
 
-   10 expr: int_expr
+   12 expr: int_expr
 
-   11 int_expr: int_expr ADD int_expr
-   12         | int_expr SUB int_expr
-   13         | int_expr OR int_expr
-   14         | int_expr AND int_expr
-   15         | int_expr EQ int_expr
-   16         | int_expr LT int_expr
-   17         | int_expr LE int_expr
-   18         | int_expr GT int_expr
-   19         | int_expr GE int_expr
-   20         | NOT int_expr
-   21         | NUMBER
-   22         | NAME
-   23         | OBRACE int_expr CBRACE
+   13 int_expr: int_expr ADD int_expr
+   14         | int_expr SUB int_expr
+   15         | int_expr OR int_expr
+   16         | int_expr AND int_expr
+   17         | int_expr EQ int_expr
+   18         | int_expr LT int_expr
+   19         | int_expr LE int_expr
+   20         | int_expr GT int_expr
+   21         | int_expr GE int_expr
+   22         | NOT int_expr
+   23         | NUMBER
+   24         | NAME
+   25         | OBRACE int_expr CBRACE
 
-   24 decl: INIT NAME ASSIGN expr SEMICOLON
-   25     | INIT NAME SEMICOLON
-   26     | INIT GLOBAL NAME ASSIGN SEMICOLON
-   27     | INIT GLOBAL NAME SEMICOLON
-   28     | DEFINE NAME AS NAME SEMICOLON
-   29     | expr
+   26 decl: INIT NAME ASSIGN expr SEMICOLON
+   27     | INIT NAME SEMICOLON
 
-   30 delete: DELETE NAME SEMICOLON
+   28 print: PRINT OBRACE STRINGCONST CBRACE SEMICOLON
+   29      | PRINT OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON
+   30      | PRINT OBRACE expr COMA NUMBER CBRACE SEMICOLON
 
-   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   32          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK
+   31 globals: INIT GLOBAL NAME ASSIGN expr SEMICOLON
+   32        | INIT GLOBAL NAME SEMICOLON
+
+   33 define: DEFINE NAME AS NAME SEMICOLON
+
+   34 delete: DELETE NAME SEMICOLON
+
+   35 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   36          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-NUMBER (258) 21
-NAME (259) 9 22 24 25 26 27 28 30
+NUMBER (258) 23 29 30
+NAME (259) 11 24 26 27 31 32 33 34
 REF (260)
 COLON (261)
-SEMICOLON (262) 9 24 25 26 27 28 30
-STRINGCONST (263)
+SEMICOLON (262) 11 26 27 28 29 30 31 32 33 34
+STRINGCONST (263) 28
 STRING (264)
 INTEGER (265)
-COMA (266)
+COMA (266) 29 30
 RETURN (267)
-ASSIGN (268) 9 24 26
-IF (269) 31 32
+ASSIGN (268) 11 26 31
+IF (269) 35 36
 WHILE (270)
 LOOP (271)
 POOL (272)
@@ -93,909 +99,1090 @@ NEQ (275)
 LABEL (276)
 RECOPENBRACE (277)
 RECCLOSEBRACE (278)
-OBLOCK (279) 31 32
-CBLOCK (280) 31 32
+OBLOCK (279) 35 36
+CBLOCK (280) 35 36
 THEN (281)
-ELSE (282) 31
+ELSE (282) 35
 GOTO (283)
-OBRACE (284) 23 31 32
-CBRACE (285) 23 31 32
-DELETE (286) 30
-GLOBAL (287) 26 27
-DEFINE (288) 28
-INIT (289) 24 25 26 27
-AS (290) 28
-OR (291) 13
-AND (292) 14
-GE (293) 19
-LE (294) 17
-GT (295) 18
-LT (296) 16
-EQ (297) 15
-SUB (298) 12
-ADD (299) 11
-DIV (300)
-MUL (301)
-NOT (302) 20
+OBRACE (284) 25 28 29 30 35 36
+CBRACE (285) 25 28 29 30 35 36
+DELETE (286) 34
+GLOBAL (287) 31 32
+DEFINE (288) 33
+INIT (289) 26 27 31 32
+AS (290) 33
+QUOTE (291)
+PRINT (292) 28 29 30
+SYMBOL (293) 29
+OR (294) 15
+AND (295) 16
+GE (296) 21
+LE (297) 19
+GT (298) 20
+LT (299) 18
+EQ (300) 17
+SUB (301) 14
+ADD (302) 13
+DIV (303)
+MUL (304)
+NOT (305) 22
 
 
 Nonterminals, with rules where they appear
 
-$accept (48)
+$accept (51)
     on left: 0
-program (49)
-    on left: 1 2, on right: 0
-commands (50)
-    on left: 3 4, on right: 2 3 31 32
-command (51)
-    on left: 5 6 7 8, on right: 3 4
-assign (52)
-    on left: 9, on right: 5
-expr (53)
-    on left: 10, on right: 9 24 29 31 32
-int_expr (54)
-    on left: 11 12 13 14 15 16 17 18 19 20 21 22 23, on right: 10 11
-    12 13 14 15 16 17 18 19 20 23
-decl (55)
-    on left: 24 25 26 27 28 29, on right: 7
-delete (56)
-    on left: 30, on right: 8
-condition (57)
-    on left: 31 32, on right: 6
+program (52)
+    on left: 1 2 3, on right: 0 1 2
+commands (53)
+    on left: 4 5, on right: 3 4 35 36
+command (54)
+    on left: 6 7 8 9 10, on right: 4 5
+assign (55)
+    on left: 11, on right: 6
+expr (56)
+    on left: 12, on right: 11 26 30 31 35 36
+int_expr (57)
+    on left: 13 14 15 16 17 18 19 20 21 22 23 24 25, on right: 12 13
+    14 15 16 17 18 19 20 21 22 25
+decl (58)
+    on left: 26 27, on right: 8
+print (59)
+    on left: 28 29 30, on right: 10
+globals (60)
+    on left: 31 32, on right: 2
+define (61)
+    on left: 33, on right: 1
+delete (62)
+    on left: 34, on right: 9
+condition (63)
+    on left: 35 36, on right: 7
 
 
 state 0
 
     0 $accept: . program $end
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 2
-    IF      shift, and go to state 3
-    OBRACE  shift, and go to state 4
-    DELETE  shift, and go to state 5
-    DEFINE  shift, and go to state 6
-    INIT    shift, and go to state 7
-    NOT     shift, and go to state 8
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    DELETE  shift, and go to state 3
+    DEFINE  shift, and go to state 4
+    INIT    shift, and go to state 5
+    PRINT   shift, and go to state 6
 
-    $default  reduce using rule 1 (program)
-
-    program    go to state 9
-    commands   go to state 10
-    command    go to state 11
-    assign     go to state 12
-    expr       go to state 13
-    int_expr   go to state 14
-    decl       go to state 15
-    delete     go to state 16
-    condition  go to state 17
+    program    go to state 7
+    commands   go to state 8
+    command    go to state 9
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    globals    go to state 13
+    define     go to state 14
+    delete     go to state 15
+    condition  go to state 16
 
 
 state 1
 
-   21 int_expr: NUMBER .
+   11 assign: NAME . ASSIGN expr SEMICOLON
 
-    $default  reduce using rule 21 (int_expr)
+    ASSIGN  shift, and go to state 17
 
 
 state 2
 
-    9 assign: NAME . ASSIGN expr SEMICOLON
-   22 int_expr: NAME .
+   35 condition: IF . OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   36          | IF . OBRACE expr CBRACE OBLOCK commands CBLOCK
 
-    ASSIGN  shift, and go to state 18
-
-    $default  reduce using rule 22 (int_expr)
+    OBRACE  shift, and go to state 18
 
 
 state 3
 
-   31 condition: IF . OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   32          | IF . OBRACE expr CBRACE OBLOCK commands CBLOCK
+   34 delete: DELETE . NAME SEMICOLON
 
-    OBRACE  shift, and go to state 19
+    NAME  shift, and go to state 19
 
 
 state 4
 
-   23 int_expr: OBRACE . int_expr CBRACE
+   33 define: DEFINE . NAME AS NAME SEMICOLON
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 21
+    NAME  shift, and go to state 20
 
 
 state 5
 
-   30 delete: DELETE . NAME SEMICOLON
+   26 decl: INIT . NAME ASSIGN expr SEMICOLON
+   27     | INIT . NAME SEMICOLON
+   31 globals: INIT . GLOBAL NAME ASSIGN expr SEMICOLON
+   32        | INIT . GLOBAL NAME SEMICOLON
 
-    NAME  shift, and go to state 22
+    NAME    shift, and go to state 21
+    GLOBAL  shift, and go to state 22
 
 
 state 6
 
-   28 decl: DEFINE . NAME AS NAME SEMICOLON
+   28 print: PRINT . OBRACE STRINGCONST CBRACE SEMICOLON
+   29      | PRINT . OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON
+   30      | PRINT . OBRACE expr COMA NUMBER CBRACE SEMICOLON
 
-    NAME  shift, and go to state 23
+    OBRACE  shift, and go to state 23
 
 
 state 7
 
-   24 decl: INIT . NAME ASSIGN expr SEMICOLON
-   25     | INIT . NAME SEMICOLON
-   26     | INIT . GLOBAL NAME ASSIGN SEMICOLON
-   27     | INIT . GLOBAL NAME SEMICOLON
+    0 $accept: program . $end
 
-    NAME    shift, and go to state 24
-    GLOBAL  shift, and go to state 25
+    $end  shift, and go to state 24
 
 
 state 8
 
-   20 int_expr: NOT . int_expr
+    3 program: commands .
+    4 commands: commands . command
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    DELETE  shift, and go to state 3
+    INIT    shift, and go to state 25
+    PRINT   shift, and go to state 6
 
-    int_expr  go to state 26
+    $default  reduce using rule 3 (program)
+
+    command    go to state 26
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    delete     go to state 15
+    condition  go to state 16
 
 
 state 9
 
-    0 $accept: program . $end
+    5 commands: command .
 
-    $end  shift, and go to state 27
+    $default  reduce using rule 5 (commands)
 
 
 state 10
 
-    2 program: commands .
-    3 commands: commands . command
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 2
-    IF      shift, and go to state 3
-    OBRACE  shift, and go to state 4
-    DELETE  shift, and go to state 5
-    DEFINE  shift, and go to state 6
-    INIT    shift, and go to state 7
-    NOT     shift, and go to state 8
-
-    $default  reduce using rule 2 (program)
-
-    command    go to state 28
-    assign     go to state 12
-    expr       go to state 13
-    int_expr   go to state 14
-    decl       go to state 15
-    delete     go to state 16
-    condition  go to state 17
-
-
-state 11
-
-    4 commands: command .
-
-    $default  reduce using rule 4 (commands)
-
-
-state 12
-
-    5 command: assign .
-
-    $default  reduce using rule 5 (command)
-
-
-state 13
-
-   29 decl: expr .
-
-    $default  reduce using rule 29 (decl)
-
-
-state 14
-
-   10 expr: int_expr .
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
-
-    OR   shift, and go to state 29
-    AND  shift, and go to state 30
-    GE   shift, and go to state 31
-    LE   shift, and go to state 32
-    GT   shift, and go to state 33
-    LT   shift, and go to state 34
-    EQ   shift, and go to state 35
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
-
-    $default  reduce using rule 10 (expr)
-
-
-state 15
-
-    7 command: decl .
-
-    $default  reduce using rule 7 (command)
-
-
-state 16
-
-    8 command: delete .
-
-    $default  reduce using rule 8 (command)
-
-
-state 17
-
-    6 command: condition .
+    6 command: assign .
 
     $default  reduce using rule 6 (command)
 
 
+state 11
+
+    8 command: decl .
+
+    $default  reduce using rule 8 (command)
+
+
+state 12
+
+   10 command: print .
+
+    $default  reduce using rule 10 (command)
+
+
+state 13
+
+    2 program: globals . program
+
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    DELETE  shift, and go to state 3
+    DEFINE  shift, and go to state 4
+    INIT    shift, and go to state 5
+    PRINT   shift, and go to state 6
+
+    program    go to state 27
+    commands   go to state 8
+    command    go to state 9
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    globals    go to state 13
+    define     go to state 14
+    delete     go to state 15
+    condition  go to state 16
+
+
+state 14
+
+    1 program: define . program
+
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    DELETE  shift, and go to state 3
+    DEFINE  shift, and go to state 4
+    INIT    shift, and go to state 5
+    PRINT   shift, and go to state 6
+
+    program    go to state 28
+    commands   go to state 8
+    command    go to state 9
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    globals    go to state 13
+    define     go to state 14
+    delete     go to state 15
+    condition  go to state 16
+
+
+state 15
+
+    9 command: delete .
+
+    $default  reduce using rule 9 (command)
+
+
+state 16
+
+    7 command: condition .
+
+    $default  reduce using rule 7 (command)
+
+
+state 17
+
+   11 assign: NAME ASSIGN . expr SEMICOLON
+
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
+
+    expr      go to state 33
+    int_expr  go to state 34
+
+
 state 18
 
-    9 assign: NAME ASSIGN . expr SEMICOLON
+   35 condition: IF OBRACE . expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   36          | IF OBRACE . expr CBRACE OBLOCK commands CBLOCK
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
-    expr      go to state 38
-    int_expr  go to state 14
+    expr      go to state 35
+    int_expr  go to state 34
 
 
 state 19
 
-   31 condition: IF OBRACE . expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   32          | IF OBRACE . expr CBRACE OBLOCK commands CBLOCK
+   34 delete: DELETE NAME . SEMICOLON
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    expr      go to state 39
-    int_expr  go to state 14
+    SEMICOLON  shift, and go to state 36
 
 
 state 20
 
-   22 int_expr: NAME .
+   33 define: DEFINE NAME . AS NAME SEMICOLON
 
-    $default  reduce using rule 22 (int_expr)
+    AS  shift, and go to state 37
 
 
 state 21
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
-   23         | OBRACE int_expr . CBRACE
+   26 decl: INIT NAME . ASSIGN expr SEMICOLON
+   27     | INIT NAME . SEMICOLON
 
-    CBRACE  shift, and go to state 40
-    OR      shift, and go to state 29
-    AND     shift, and go to state 30
-    GE      shift, and go to state 31
-    LE      shift, and go to state 32
-    GT      shift, and go to state 33
-    LT      shift, and go to state 34
-    EQ      shift, and go to state 35
-    SUB     shift, and go to state 36
-    ADD     shift, and go to state 37
+    SEMICOLON  shift, and go to state 38
+    ASSIGN     shift, and go to state 39
 
 
 state 22
 
-   30 delete: DELETE NAME . SEMICOLON
+   31 globals: INIT GLOBAL . NAME ASSIGN expr SEMICOLON
+   32        | INIT GLOBAL . NAME SEMICOLON
 
-    SEMICOLON  shift, and go to state 41
+    NAME  shift, and go to state 40
 
 
 state 23
 
-   28 decl: DEFINE NAME . AS NAME SEMICOLON
+   28 print: PRINT OBRACE . STRINGCONST CBRACE SEMICOLON
+   29      | PRINT OBRACE . SYMBOL COMA NUMBER CBRACE SEMICOLON
+   30      | PRINT OBRACE . expr COMA NUMBER CBRACE SEMICOLON
 
-    AS  shift, and go to state 42
+    NUMBER       shift, and go to state 29
+    NAME         shift, and go to state 30
+    STRINGCONST  shift, and go to state 41
+    OBRACE       shift, and go to state 31
+    SYMBOL       shift, and go to state 42
+    NOT          shift, and go to state 32
+
+    expr      go to state 43
+    int_expr  go to state 34
 
 
 state 24
-
-   24 decl: INIT NAME . ASSIGN expr SEMICOLON
-   25     | INIT NAME . SEMICOLON
-
-    SEMICOLON  shift, and go to state 43
-    ASSIGN     shift, and go to state 44
-
-
-state 25
-
-   26 decl: INIT GLOBAL . NAME ASSIGN SEMICOLON
-   27     | INIT GLOBAL . NAME SEMICOLON
-
-    NAME  shift, and go to state 45
-
-
-state 26
-
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
-   20         | NOT int_expr .
-
-    $default  reduce using rule 20 (int_expr)
-
-
-state 27
 
     0 $accept: program $end .
 
     $default  accept
 
 
+state 25
+
+   26 decl: INIT . NAME ASSIGN expr SEMICOLON
+   27     | INIT . NAME SEMICOLON
+
+    NAME  shift, and go to state 21
+
+
+state 26
+
+    4 commands: commands command .
+
+    $default  reduce using rule 4 (commands)
+
+
+state 27
+
+    2 program: globals program .
+
+    $default  reduce using rule 2 (program)
+
+
 state 28
 
-    3 commands: commands command .
+    1 program: define program .
 
-    $default  reduce using rule 3 (commands)
+    $default  reduce using rule 1 (program)
 
 
 state 29
 
-   13 int_expr: int_expr OR . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 46
-
-
-state 30
-
-   14 int_expr: int_expr AND . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 47
-
-
-state 31
-
-   19 int_expr: int_expr GE . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 48
-
-
-state 32
-
-   17 int_expr: int_expr LE . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 49
-
-
-state 33
-
-   18 int_expr: int_expr GT . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 50
-
-
-state 34
-
-   16 int_expr: int_expr LT . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 51
-
-
-state 35
-
-   15 int_expr: int_expr EQ . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 52
-
-
-state 36
-
-   12 int_expr: int_expr SUB . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 53
-
-
-state 37
-
-   11 int_expr: int_expr ADD . int_expr
-
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
-
-    int_expr  go to state 54
-
-
-state 38
-
-    9 assign: NAME ASSIGN expr . SEMICOLON
-
-    SEMICOLON  shift, and go to state 55
-
-
-state 39
-
-   31 condition: IF OBRACE expr . CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   32          | IF OBRACE expr . CBRACE OBLOCK commands CBLOCK
-
-    CBRACE  shift, and go to state 56
-
-
-state 40
-
-   23 int_expr: OBRACE int_expr CBRACE .
+   23 int_expr: NUMBER .
 
     $default  reduce using rule 23 (int_expr)
 
 
-state 41
+state 30
 
-   30 delete: DELETE NAME SEMICOLON .
+   24 int_expr: NAME .
 
-    $default  reduce using rule 30 (delete)
+    $default  reduce using rule 24 (int_expr)
 
 
-state 42
+state 31
 
-   28 decl: DEFINE NAME AS . NAME SEMICOLON
+   25 int_expr: OBRACE . int_expr CBRACE
+
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
+
+    int_expr  go to state 44
+
+
+state 32
+
+   22 int_expr: NOT . int_expr
+
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
+
+    int_expr  go to state 45
+
+
+state 33
+
+   11 assign: NAME ASSIGN expr . SEMICOLON
+
+    SEMICOLON  shift, and go to state 46
+
+
+state 34
+
+   12 expr: int_expr .
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
+
+    OR   shift, and go to state 47
+    AND  shift, and go to state 48
+    GE   shift, and go to state 49
+    LE   shift, and go to state 50
+    GT   shift, and go to state 51
+    LT   shift, and go to state 52
+    EQ   shift, and go to state 53
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
+
+    $default  reduce using rule 12 (expr)
+
+
+state 35
+
+   35 condition: IF OBRACE expr . CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   36          | IF OBRACE expr . CBRACE OBLOCK commands CBLOCK
+
+    CBRACE  shift, and go to state 56
+
+
+state 36
+
+   34 delete: DELETE NAME SEMICOLON .
+
+    $default  reduce using rule 34 (delete)
+
+
+state 37
+
+   33 define: DEFINE NAME AS . NAME SEMICOLON
 
     NAME  shift, and go to state 57
 
 
-state 43
+state 38
 
-   25 decl: INIT NAME SEMICOLON .
+   27 decl: INIT NAME SEMICOLON .
 
-    $default  reduce using rule 25 (decl)
+    $default  reduce using rule 27 (decl)
 
 
-state 44
+state 39
 
-   24 decl: INIT NAME ASSIGN . expr SEMICOLON
+   26 decl: INIT NAME ASSIGN . expr SEMICOLON
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 20
-    OBRACE  shift, and go to state 4
-    NOT     shift, and go to state 8
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
     expr      go to state 58
-    int_expr  go to state 14
+    int_expr  go to state 34
 
 
-state 45
+state 40
 
-   26 decl: INIT GLOBAL NAME . ASSIGN SEMICOLON
-   27     | INIT GLOBAL NAME . SEMICOLON
+   31 globals: INIT GLOBAL NAME . ASSIGN expr SEMICOLON
+   32        | INIT GLOBAL NAME . SEMICOLON
 
     SEMICOLON  shift, and go to state 59
     ASSIGN     shift, and go to state 60
 
 
+state 41
+
+   28 print: PRINT OBRACE STRINGCONST . CBRACE SEMICOLON
+
+    CBRACE  shift, and go to state 61
+
+
+state 42
+
+   29 print: PRINT OBRACE SYMBOL . COMA NUMBER CBRACE SEMICOLON
+
+    COMA  shift, and go to state 62
+
+
+state 43
+
+   30 print: PRINT OBRACE expr . COMA NUMBER CBRACE SEMICOLON
+
+    COMA  shift, and go to state 63
+
+
+state 44
+
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
+   25         | OBRACE int_expr . CBRACE
+
+    CBRACE  shift, and go to state 64
+    OR      shift, and go to state 47
+    AND     shift, and go to state 48
+    GE      shift, and go to state 49
+    LE      shift, and go to state 50
+    GT      shift, and go to state 51
+    LT      shift, and go to state 52
+    EQ      shift, and go to state 53
+    SUB     shift, and go to state 54
+    ADD     shift, and go to state 55
+
+
+state 45
+
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
+   22         | NOT int_expr .
+
+    $default  reduce using rule 22 (int_expr)
+
+
 state 46
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   13         | int_expr OR int_expr .
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
+   11 assign: NAME ASSIGN expr SEMICOLON .
 
-    AND  shift, and go to state 30
-    GE   shift, and go to state 31
-    LE   shift, and go to state 32
-    GT   shift, and go to state 33
-    LT   shift, and go to state 34
-    EQ   shift, and go to state 35
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
-
-    $default  reduce using rule 13 (int_expr)
+    $default  reduce using rule 11 (assign)
 
 
 state 47
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   14         | int_expr AND int_expr .
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
+   15 int_expr: int_expr OR . int_expr
 
-    GE   shift, and go to state 31
-    LE   shift, and go to state 32
-    GT   shift, and go to state 33
-    LT   shift, and go to state 34
-    EQ   shift, and go to state 35
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
-    $default  reduce using rule 14 (int_expr)
+    int_expr  go to state 65
 
 
 state 48
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
-   19         | int_expr GE int_expr .
+   16 int_expr: int_expr AND . int_expr
 
-    EQ   shift, and go to state 35
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
-    $default  reduce using rule 19 (int_expr)
+    int_expr  go to state 66
 
 
 state 49
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   17         | int_expr LE int_expr .
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
+   21 int_expr: int_expr GE . int_expr
 
-    EQ   shift, and go to state 35
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
-    $default  reduce using rule 17 (int_expr)
+    int_expr  go to state 67
 
 
 state 50
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   18         | int_expr GT int_expr .
-   19         | int_expr . GE int_expr
+   19 int_expr: int_expr LE . int_expr
 
-    EQ   shift, and go to state 35
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
-    $default  reduce using rule 18 (int_expr)
+    int_expr  go to state 68
 
 
 state 51
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   16         | int_expr LT int_expr .
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
+   20 int_expr: int_expr GT . int_expr
 
-    EQ   shift, and go to state 35
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
-    $default  reduce using rule 16 (int_expr)
+    int_expr  go to state 69
 
 
 state 52
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   15         | int_expr EQ int_expr .
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
+   18 int_expr: int_expr LT . int_expr
 
-    SUB  shift, and go to state 36
-    ADD  shift, and go to state 37
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
 
-    $default  reduce using rule 15 (int_expr)
+    int_expr  go to state 70
 
 
 state 53
 
-   11 int_expr: int_expr . ADD int_expr
-   12         | int_expr . SUB int_expr
-   12         | int_expr SUB int_expr .
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
+   17 int_expr: int_expr EQ . int_expr
 
-    $default  reduce using rule 12 (int_expr)
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
+
+    int_expr  go to state 71
 
 
 state 54
 
-   11 int_expr: int_expr . ADD int_expr
-   11         | int_expr ADD int_expr .
-   12         | int_expr . SUB int_expr
-   13         | int_expr . OR int_expr
-   14         | int_expr . AND int_expr
-   15         | int_expr . EQ int_expr
-   16         | int_expr . LT int_expr
-   17         | int_expr . LE int_expr
-   18         | int_expr . GT int_expr
-   19         | int_expr . GE int_expr
+   14 int_expr: int_expr SUB . int_expr
 
-    $default  reduce using rule 11 (int_expr)
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
+
+    int_expr  go to state 72
 
 
 state 55
 
-    9 assign: NAME ASSIGN expr SEMICOLON .
+   13 int_expr: int_expr ADD . int_expr
 
-    $default  reduce using rule 9 (assign)
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
+
+    int_expr  go to state 73
 
 
 state 56
 
-   31 condition: IF OBRACE expr CBRACE . OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
-   32          | IF OBRACE expr CBRACE . OBLOCK commands CBLOCK
+   35 condition: IF OBRACE expr CBRACE . OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK
+   36          | IF OBRACE expr CBRACE . OBLOCK commands CBLOCK
 
-    OBLOCK  shift, and go to state 61
+    OBLOCK  shift, and go to state 74
 
 
 state 57
 
-   28 decl: DEFINE NAME AS NAME . SEMICOLON
+   33 define: DEFINE NAME AS NAME . SEMICOLON
 
-    SEMICOLON  shift, and go to state 62
+    SEMICOLON  shift, and go to state 75
 
 
 state 58
 
-   24 decl: INIT NAME ASSIGN expr . SEMICOLON
+   26 decl: INIT NAME ASSIGN expr . SEMICOLON
 
-    SEMICOLON  shift, and go to state 63
+    SEMICOLON  shift, and go to state 76
 
 
 state 59
 
-   27 decl: INIT GLOBAL NAME SEMICOLON .
+   32 globals: INIT GLOBAL NAME SEMICOLON .
 
-    $default  reduce using rule 27 (decl)
+    $default  reduce using rule 32 (globals)
 
 
 state 60
 
-   26 decl: INIT GLOBAL NAME ASSIGN . SEMICOLON
+   31 globals: INIT GLOBAL NAME ASSIGN . expr SEMICOLON
 
-    SEMICOLON  shift, and go to state 64
+    NUMBER  shift, and go to state 29
+    NAME    shift, and go to state 30
+    OBRACE  shift, and go to state 31
+    NOT     shift, and go to state 32
+
+    expr      go to state 77
+    int_expr  go to state 34
 
 
 state 61
 
-   31 condition: IF OBRACE expr CBRACE OBLOCK . commands CBLOCK ELSE OBLOCK commands CBLOCK
-   32          | IF OBRACE expr CBRACE OBLOCK . commands CBLOCK
+   28 print: PRINT OBRACE STRINGCONST CBRACE . SEMICOLON
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 2
-    IF      shift, and go to state 3
-    OBRACE  shift, and go to state 4
-    DELETE  shift, and go to state 5
-    DEFINE  shift, and go to state 6
-    INIT    shift, and go to state 7
-    NOT     shift, and go to state 8
-
-    commands   go to state 65
-    command    go to state 11
-    assign     go to state 12
-    expr       go to state 13
-    int_expr   go to state 14
-    decl       go to state 15
-    delete     go to state 16
-    condition  go to state 17
+    SEMICOLON  shift, and go to state 78
 
 
 state 62
 
-   28 decl: DEFINE NAME AS NAME SEMICOLON .
+   29 print: PRINT OBRACE SYMBOL COMA . NUMBER CBRACE SEMICOLON
 
-    $default  reduce using rule 28 (decl)
+    NUMBER  shift, and go to state 79
 
 
 state 63
 
-   24 decl: INIT NAME ASSIGN expr SEMICOLON .
+   30 print: PRINT OBRACE expr COMA . NUMBER CBRACE SEMICOLON
 
-    $default  reduce using rule 24 (decl)
+    NUMBER  shift, and go to state 80
 
 
 state 64
 
-   26 decl: INIT GLOBAL NAME ASSIGN SEMICOLON .
+   25 int_expr: OBRACE int_expr CBRACE .
 
-    $default  reduce using rule 26 (decl)
+    $default  reduce using rule 25 (int_expr)
 
 
 state 65
 
-    3 commands: commands . command
-   31 condition: IF OBRACE expr CBRACE OBLOCK commands . CBLOCK ELSE OBLOCK commands CBLOCK
-   32          | IF OBRACE expr CBRACE OBLOCK commands . CBLOCK
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   15         | int_expr OR int_expr .
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 2
-    IF      shift, and go to state 3
-    CBLOCK  shift, and go to state 66
-    OBRACE  shift, and go to state 4
-    DELETE  shift, and go to state 5
-    DEFINE  shift, and go to state 6
-    INIT    shift, and go to state 7
-    NOT     shift, and go to state 8
+    AND  shift, and go to state 48
+    GE   shift, and go to state 49
+    LE   shift, and go to state 50
+    GT   shift, and go to state 51
+    LT   shift, and go to state 52
+    EQ   shift, and go to state 53
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
 
-    command    go to state 28
-    assign     go to state 12
-    expr       go to state 13
-    int_expr   go to state 14
-    decl       go to state 15
-    delete     go to state 16
-    condition  go to state 17
+    $default  reduce using rule 15 (int_expr)
 
 
 state 66
 
-   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK . ELSE OBLOCK commands CBLOCK
-   32          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK .
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   16         | int_expr AND int_expr .
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
 
-    ELSE  shift, and go to state 67
+    GE   shift, and go to state 49
+    LE   shift, and go to state 50
+    GT   shift, and go to state 51
+    LT   shift, and go to state 52
+    EQ   shift, and go to state 53
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
 
-    $default  reduce using rule 32 (condition)
+    $default  reduce using rule 16 (int_expr)
 
 
 state 67
 
-   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE . OBLOCK commands CBLOCK
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
+   21         | int_expr GE int_expr .
 
-    OBLOCK  shift, and go to state 68
+    EQ   shift, and go to state 53
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
+
+    $default  reduce using rule 21 (int_expr)
 
 
 state 68
 
-   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK . commands CBLOCK
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   19         | int_expr LE int_expr .
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 2
-    IF      shift, and go to state 3
-    OBRACE  shift, and go to state 4
-    DELETE  shift, and go to state 5
-    DEFINE  shift, and go to state 6
-    INIT    shift, and go to state 7
-    NOT     shift, and go to state 8
+    EQ   shift, and go to state 53
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
 
-    commands   go to state 69
-    command    go to state 11
-    assign     go to state 12
-    expr       go to state 13
-    int_expr   go to state 14
-    decl       go to state 15
-    delete     go to state 16
-    condition  go to state 17
+    $default  reduce using rule 19 (int_expr)
 
 
 state 69
 
-    3 commands: commands . command
-   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands . CBLOCK
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   20         | int_expr GT int_expr .
+   21         | int_expr . GE int_expr
 
-    NUMBER  shift, and go to state 1
-    NAME    shift, and go to state 2
-    IF      shift, and go to state 3
-    CBLOCK  shift, and go to state 70
-    OBRACE  shift, and go to state 4
-    DELETE  shift, and go to state 5
-    DEFINE  shift, and go to state 6
-    INIT    shift, and go to state 7
-    NOT     shift, and go to state 8
+    EQ   shift, and go to state 53
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
 
-    command    go to state 28
-    assign     go to state 12
-    expr       go to state 13
-    int_expr   go to state 14
-    decl       go to state 15
-    delete     go to state 16
-    condition  go to state 17
+    $default  reduce using rule 20 (int_expr)
 
 
 state 70
 
-   31 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK .
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   18         | int_expr LT int_expr .
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
 
-    $default  reduce using rule 31 (condition)
+    EQ   shift, and go to state 53
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
+
+    $default  reduce using rule 18 (int_expr)
+
+
+state 71
+
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   17         | int_expr EQ int_expr .
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
+
+    SUB  shift, and go to state 54
+    ADD  shift, and go to state 55
+
+    $default  reduce using rule 17 (int_expr)
+
+
+state 72
+
+   13 int_expr: int_expr . ADD int_expr
+   14         | int_expr . SUB int_expr
+   14         | int_expr SUB int_expr .
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
+
+    $default  reduce using rule 14 (int_expr)
+
+
+state 73
+
+   13 int_expr: int_expr . ADD int_expr
+   13         | int_expr ADD int_expr .
+   14         | int_expr . SUB int_expr
+   15         | int_expr . OR int_expr
+   16         | int_expr . AND int_expr
+   17         | int_expr . EQ int_expr
+   18         | int_expr . LT int_expr
+   19         | int_expr . LE int_expr
+   20         | int_expr . GT int_expr
+   21         | int_expr . GE int_expr
+
+    $default  reduce using rule 13 (int_expr)
+
+
+state 74
+
+   35 condition: IF OBRACE expr CBRACE OBLOCK . commands CBLOCK ELSE OBLOCK commands CBLOCK
+   36          | IF OBRACE expr CBRACE OBLOCK . commands CBLOCK
+
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    DELETE  shift, and go to state 3
+    INIT    shift, and go to state 25
+    PRINT   shift, and go to state 6
+
+    commands   go to state 81
+    command    go to state 9
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    delete     go to state 15
+    condition  go to state 16
+
+
+state 75
+
+   33 define: DEFINE NAME AS NAME SEMICOLON .
+
+    $default  reduce using rule 33 (define)
+
+
+state 76
+
+   26 decl: INIT NAME ASSIGN expr SEMICOLON .
+
+    $default  reduce using rule 26 (decl)
+
+
+state 77
+
+   31 globals: INIT GLOBAL NAME ASSIGN expr . SEMICOLON
+
+    SEMICOLON  shift, and go to state 82
+
+
+state 78
+
+   28 print: PRINT OBRACE STRINGCONST CBRACE SEMICOLON .
+
+    $default  reduce using rule 28 (print)
+
+
+state 79
+
+   29 print: PRINT OBRACE SYMBOL COMA NUMBER . CBRACE SEMICOLON
+
+    CBRACE  shift, and go to state 83
+
+
+state 80
+
+   30 print: PRINT OBRACE expr COMA NUMBER . CBRACE SEMICOLON
+
+    CBRACE  shift, and go to state 84
+
+
+state 81
+
+    4 commands: commands . command
+   35 condition: IF OBRACE expr CBRACE OBLOCK commands . CBLOCK ELSE OBLOCK commands CBLOCK
+   36          | IF OBRACE expr CBRACE OBLOCK commands . CBLOCK
+
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    CBLOCK  shift, and go to state 85
+    DELETE  shift, and go to state 3
+    INIT    shift, and go to state 25
+    PRINT   shift, and go to state 6
+
+    command    go to state 26
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    delete     go to state 15
+    condition  go to state 16
+
+
+state 82
+
+   31 globals: INIT GLOBAL NAME ASSIGN expr SEMICOLON .
+
+    $default  reduce using rule 31 (globals)
+
+
+state 83
+
+   29 print: PRINT OBRACE SYMBOL COMA NUMBER CBRACE . SEMICOLON
+
+    SEMICOLON  shift, and go to state 86
+
+
+state 84
+
+   30 print: PRINT OBRACE expr COMA NUMBER CBRACE . SEMICOLON
+
+    SEMICOLON  shift, and go to state 87
+
+
+state 85
+
+   35 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK . ELSE OBLOCK commands CBLOCK
+   36          | IF OBRACE expr CBRACE OBLOCK commands CBLOCK .
+
+    ELSE  shift, and go to state 88
+
+    $default  reduce using rule 36 (condition)
+
+
+state 86
+
+   29 print: PRINT OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON .
+
+    $default  reduce using rule 29 (print)
+
+
+state 87
+
+   30 print: PRINT OBRACE expr COMA NUMBER CBRACE SEMICOLON .
+
+    $default  reduce using rule 30 (print)
+
+
+state 88
+
+   35 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE . OBLOCK commands CBLOCK
+
+    OBLOCK  shift, and go to state 89
+
+
+state 89
+
+   35 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK . commands CBLOCK
+
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    DELETE  shift, and go to state 3
+    INIT    shift, and go to state 25
+    PRINT   shift, and go to state 6
+
+    commands   go to state 90
+    command    go to state 9
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    delete     go to state 15
+    condition  go to state 16
+
+
+state 90
+
+    4 commands: commands . command
+   35 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands . CBLOCK
+
+    NAME    shift, and go to state 1
+    IF      shift, and go to state 2
+    CBLOCK  shift, and go to state 91
+    DELETE  shift, and go to state 3
+    INIT    shift, and go to state 25
+    PRINT   shift, and go to state 6
+
+    command    go to state 26
+    assign     go to state 10
+    decl       go to state 11
+    print      go to state 12
+    delete     go to state 15
+    condition  go to state 16
+
+
+state 91
+
+   35 condition: IF OBRACE expr CBRACE OBLOCK commands CBLOCK ELSE OBLOCK commands CBLOCK .
+
+    $default  reduce using rule 35 (condition)

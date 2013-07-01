@@ -9,9 +9,11 @@
 %option stack
 
 DIGIT [0-9]
-NAME [a-zA-Z][a-zA-Z0-9]*
+NAME [a-zA-Z][a-zA-Z0-9_]*
 QUOTE [\"]
+AP[']
 STRINGCONST [a-zA-Z0-9]*
+SYMBOL [a-zA-Z0-9 .]
 WS [ \t\n]+
 WSN [ \t\n]*
 
@@ -24,7 +26,7 @@ WSN [ \t\n]*
 	"{"{WS}					{ return OBLOCK; }
 	"}"{WS}					{ return CBLOCK; }
 	"goto"{WS}				{ return GOTO; }
-	"print"{WSN}/"("			{ return WRITE; }
+	"print"{WSN}/"("			{ return PRINT; }
 	"int"{WSN}				{ /*printf("INTEGER");*/ return INTEGER; }
 	"label"{WS}				{ return LABEL; }
 	"global"{WS}				{ return GLOBAL; }
@@ -32,6 +34,16 @@ WSN [ \t\n]*
 	"init"{WS}				{ return INIT; }
 	"as"{WS}				{ return AS; }
 	"delete"{WS}				{ return DELETE; }
+	{QUOTE}{STRINGCONST}{QUOTE}{WSN}	{ 
+							*yytext = 0; yytext++;
+							char *s = yytext;
+							while (*yytext != '\"') {
+								yytext++;
+							}
+							*yytext = 0; yytext = s;
+							yylval.string = strdup(yytext);
+							return STRINGCONST;
+						}
 	"["{WSN}				{ return RECOPENBRACE; }
 	"]"{WSN}				{ return RECCLOSEBRACE; }
 	"<"{WSN}				{ return LT; }
@@ -60,9 +72,11 @@ WSN [ \t\n]*
 								yytext++;
 							}
 							*yytext = 0; yytext = s;
-							yylval.string = strdup(yytext); /*printf(yytext);*/ return NAME;
+							yylval.string = strdup(yytext); return NAME;
 						}
-	/*<<EOF>>					{ printf("EOF\n"); return EOFF; }*/
+	{AP}{SYMBOL}{AP}			{ *yytext = 0; yytext++; yytext[strlen(yytext)-1] = 0; 
+						  yylval.string = strdup(yytext); return SYMBOL;
+						}
 }
 
 %%

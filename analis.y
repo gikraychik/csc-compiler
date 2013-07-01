@@ -27,7 +27,9 @@ public:
 			case 4: cout << "Memory::isFree: error: out of range" << endl;
 			case 5: cout << "Memory::free_mem: error: impossible to delete an undeclared variable" << endl; break;
 			case 6: cout << "Memory::free_cell: error: impossible to delete global variable" << endl; break;
-			case 7: cout << "Memory::getInnerName: error: undeclared identifier in expression" << endl; break;	
+			case 7: cout << "Memory::getInnerName: error: undeclared identifier in expression" << endl; break;
+			case 8: cout << "Error: argument of print must have 4 symbols only" << endl; break;
+			case 9: cout << "Error: nowhere to print; call LED0 - LED4" << endl; break;	
 			default: cout << "Unexpected error" << endl; break;
 		}
 	}
@@ -93,6 +95,10 @@ public:
 	void makeGlobal(string &int_name)
 	{
 		globals[innerNameToNumber(int_name)] = 1;
+	}
+	void define(string &ext_name, string &int_name)
+	{
+		names[ext_name] = int_name;
 	}
 	string getInnerName(string &ext_name) throw(int)
 	{
@@ -162,6 +168,21 @@ public:
 		}
 		for (int i = 0; i < 50; i++) { cout << "*"; } cout << endl;
 	}
+	char *itoa(int n, char s[])
+ 	{
+     		int i, sign;
+     		if ((sign = n) < 0)  /* записываем знак */
+        		n = -n;          /* делаем n положительным числом */
+    		i = 0;
+     		do {       /* генерируем цифры в обратном порядке */
+         		s[i++] = n % 10 + '0';   /* берем следующую цифру */
+     		} while ((n /= 10) > 0);     /* удаляем */
+     		if (sign < 0)
+         		s[i++] = '-';
+     		s[i] = '\0';
+     		reverse(s);
+		return s;
+	}
 private:
 	map<string, string> names;
 	int cap;  //how much memory we have
@@ -193,23 +214,7 @@ private:
 		 s[i] = s[j];
 		 s[j] = c;
 	    }
-	}
-	char *itoa(int n, char s[])
- 	{
-     		int i, sign;
-     		if ((sign = n) < 0)  /* записываем знак */
-        		n = -n;          /* делаем n положительным числом */
-    		i = 0;
-     		do {       /* генерируем цифры в обратном порядке */
-         		s[i++] = n % 10 + '0';   /* берем следующую цифру */
-     		} while ((n /= 10) > 0);     /* удаляем */
-     		if (sign < 0)
-         		s[i++] = '-';
-     		s[i] = '\0';
-     		reverse(s);
-		return s;
-	}
-	
+	}	
 };
 
 class Assembler
@@ -271,6 +276,14 @@ public:
 	{
 		ternary("AND", op1, op2, res);
 	}
+	void cl(const char *what, const char *where)
+	{
+		binary("CL", what, where);
+	}
+	void cd(const char *what, const char *where)
+	{
+		binary("CD", what, where);
+	}
 
 private:	 
 	void ternary(const char *cmd, const char *op1, const char *op2, const char *op3)
@@ -313,6 +326,17 @@ void yyerror(const char *s)
 Assembler asmr;
 Memory mem(30);
 
+void print(char c, int number)
+{
+	string where("LED");
+	char *tmp = (char *)malloc(33*sizeof(char));
+	where = where + string(mem.itoa(number, tmp));
+	free(tmp);
+	string what(mem.numberToInnerName(mem.alloc()));
+	asmr.move(c, what.data());
+	asmr.cl(what.data(), where.data());
+	mem.free_cell(what.data());
+}
 int main()
 {
 	yyparse();
@@ -324,7 +348,7 @@ int main()
 %token IF WHILE LOOP POOL READ WRITE NEQ
 %token LABEL RECOPENBRACE RECCLOSEBRACE
 %token OBLOCK CBLOCK THEN ELSE GOTO OBRACE CBRACE DELETE
-%token GLOBAL DEFINE INIT AS
+%token GLOBAL DEFINE INIT AS QUOTE PRINT SYMBOL
 
 %left OR
 %left AND
@@ -341,7 +365,8 @@ int main()
 }
 
 %%
-program :	/* empty */
+program :	define program
+		| globals program
 		| commands
 		;
 commands :	commands command
@@ -351,6 +376,7 @@ command :	assign
 		| condition
 		| decl
 		| delete
+		| print
 		;
 assign :	NAME ASSIGN expr SEMICOLON
 		;
@@ -438,12 +464,14 @@ int_expr:	int_expr ADD int_expr
 		;
 decl:		INIT NAME ASSIGN expr SEMICOLON
 		{
-			string str($<string>2);
-			string *new_mem;
+			string *ext_name = new string($<string>2);  //memory leak
+			string *int_name = new string($<string>4);  //memory leak
+			mem.define(*ext_name, *int_name);
+			/*string *new_mem;
 			try { new_mem = new string(mem.alloc(str)); }  //memory leak
 			catch (int e) { Error::error(e); break; }
 			asmr.move($<string>4, new_mem->data());
-			mem.free_cell($<string>4);
+			mem.free_cell($<string>4);*/
 		}
 		| INIT NAME SEMICOLON
 		{
@@ -451,24 +479,67 @@ decl:		INIT NAME ASSIGN expr SEMICOLON
 			try { mem.alloc(str); }
 			catch (int e) { Error::error(e); break; }
 		}
-		| INIT GLOBAL NAME ASSIGN SEMICOLON
+		;
+print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
+		{
+			char *what = strdup($<string>3);
+			if (strlen(what) != 4) { Error::error(8); }
+			for (int i = 0; i < 4; i++)
+			{
+				print(what[i], i);
+			}
+			free(what);
+		}
+		| PRINT OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON
+		{
+			print(*($<string>3), $<number>5);
+		}
+		| PRINT OBRACE expr COMA NUMBER CBRACE SEMICOLON
+		{
+			if ($<number>5>4) { Error::error(9); break; }
+			char *tmp = (char *)malloc(33*sizeof(char));
+			string where = string("LED") + string(mem.itoa($<number>5, tmp));
+			free(tmp);
+			asmr.cd($<string>3, where.data());
+			mem.free_cell($<string>3);
+		}
+		/*| PRINT OBRACE NAME COMA NUMBER CBRACE SEMICOLON
+		{
+			char *tmp = (char *)malloc(33*sizeof(char));
+			string where = string("LED") + string(mem.itoa($<number>5, tmp));
+			free(tmp);
+			asmr.cd($<string>3, where.data());
+		}*/
+		;
+globals:	INIT GLOBAL NAME ASSIGN expr SEMICOLON
+		{
+			string *ext_name = new string($<string>3);  //memory leak
+			string *int_name = new string($<string>5);  //memory leak
+			mem.define(*ext_name, *int_name);
+			mem.makeGlobal(*int_name);
+			/*string str($<string>3);
+			string *int_name;
+			try { int_name = new string(mem.alloc(str)); }  //memory leak
+			catch (int e) { Error::error(e); break; }
+			asmr.move($<string>5, int_name->data());
+			mem.free_cell($<string>5);
+			mem.makeGlobal(*int_name);*/
+		}
 		| INIT GLOBAL NAME SEMICOLON
 		{
 			string str($<string>3);
 			string *int_name;
-			try
-			{			
-				int_name = new string(mem.alloc(str));  //memory leak
-			}
-			catch (int e)
-			{
-				Error::error(e);
-				break;
-			}
+			try { int_name = new string(mem.alloc(str)); }  //memory leak
+			catch (int e) { Error::error(e); break; }
 			mem.makeGlobal(*int_name);
 		}
-		| DEFINE NAME AS NAME SEMICOLON
-		| expr
+		;
+define:		DEFINE NAME AS NAME SEMICOLON
+		{
+			string *ext_name = new string($<string>2);  //memory leak
+			string *int_name = new string($<string>4);  //memory leak
+			mem.define(*ext_name, *int_name);
+		}
 		;
 delete:		DELETE NAME SEMICOLON
 		{
