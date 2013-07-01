@@ -4,6 +4,7 @@ define lol as VIDEO_MODE;
 label 1;
 
 init x = 2;
-init y = 3;
-init z = x + y;
+init y = x;
+x = 3;
+
 goto 1;

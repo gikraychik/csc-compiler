@@ -395,7 +395,7 @@ void inExpr(const char *&int_name1, const char *&int_name2, const char *&res)
 	string s2(var2);
 	const char *int_name1 = mem.getInnerName(s1).data();
 	const char *int_name2 = mem.getInnerName(s2).data();*/
-	cout << var1 << " ! " << var2 << endl;
+	//cout << var1 << " ! " << var2 << endl;
 	string *new_mem;
 	if (b1 && b2)
 	{
@@ -468,74 +468,92 @@ command :	assign
 assign :	NAME ASSIGN expr SEMICOLON
 		{
 			string tmp($<string>1);
-			string where = mem.getInnerName(tmp);			
-			asmr.move($<string>3, where.data());
-			//cout << "!" << $<string>3 << "!" << endl;
-			mem.free_cell($<string>3);
+			bool isV = isVar($<string>3);
+			if (isV) { char *s = strdup($<string>3); delSht(s); $<string>3 = s; }  //memory leak
+			if (isV)
+			{
+				tmp = string($<string>1);
+				string *int_name = new string(mem.getInnerName(tmp));  //memory leak
+				//cout << tmp << endl;
+				asmr.move($<string>3, int_name->data());
+			}
+			else
+			{
+				mem.free_mem(tmp);
+				string *int_name = new string($<string>3);
+				mem.define(tmp, *int_name);	
+			}
+			//mem.free_cell($<string>3);
 		}
 		;
-expr :		int_expr { $<string>$ = $<string>1; }
+expr :		int_expr
+		{
+			$<string>$ = $<string>1;
+		}
 		;
 int_expr:	int_expr ADD int_expr
 		{
-			/*asmr.add($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;*/
 			inExpr($<string>1, $<string>3, $<string>$);
 			asmr.add($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr SUB int_expr
-		{			
-			asmr.sub($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+		{
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr.sub($<string>1, $<string>3, $<string>$);		
 		}
 		| int_expr OR int_expr
 		{			
-			asmr._or($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr._or($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr AND int_expr
 		{			
-			asmr._and($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr._and($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr EQ int_expr
 		{			
-			asmr.eq($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr.eq($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr LT int_expr
 		{			
-			asmr.lt($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr.lt($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr LE int_expr
 		{			
-			asmr.le($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr.le($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr GT int_expr
 		{			
-			asmr.gt($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr.gt($<string>1, $<string>3, $<string>$);
 		}
 		| int_expr GE int_expr
 		{			
-			asmr.ge($<string>1, $<string>3, $<string>1);
-			mem.free_cell($<string>3);
-			$<string>$ = $<string>1;
+			inExpr($<string>1, $<string>3, $<string>$);
+			asmr.ge($<string>1, $<string>3, $<string>$);
 		}
 		| NOT int_expr
 		{
-			asmr._not($<string>2, $<string>2);
-			$<string>$ = $<string>2;
+			bool isV = isVar($<string>2);
+			string new_mem;
+			if (isV) { char *s = strdup($<string>2); delSht(s); $<string>2 = s; }  //memory leak
+			if (!isV)
+			{
+				asmr._not($<string>2, $<string>2);
+				$<string>$ = $<string>2;
+			}
+			else
+			{
+				try { new_mem = mem.numberToInnerName(mem.alloc()); }
+				catch (int e) { Error::error(e); }
+				char *res = strdup(new_mem.data());
+				asmr._not($<string>2, res);
+				$<string>$ = res;
+			}
 		}
 		| NUMBER
 		{
@@ -566,9 +584,22 @@ int_expr:	int_expr ADD int_expr
 		;
 decl:		INIT NAME ASSIGN expr SEMICOLON
 		{
-			string *ext_name = new string($<string>2);  //memory leak
-			string *int_name = new string($<string>4);  //memory leak
-			mem.define(*ext_name, *int_name);
+			bool isV = isVar($<string>4);
+			string *new_mem;
+			string str($<string>2);
+			if (isV) { char *s = strdup($<string>4); delSht(s); $<string>4 = s; }  //memory leak
+			if (isV)
+			{
+				try { new_mem = new string(mem.alloc(str)); }  //memory leak
+				catch (int e) { Error::error(e); break; }
+				asmr.move($<string>4, new_mem->data());	
+			}
+			else
+			{
+				string *ext_name = new string($<string>2);  //memory leak
+				string *int_name = new string($<string>4);  //memory leak
+				mem.define(*ext_name, *int_name);
+			}
 			/*string *new_mem;
 			try { new_mem = new string(mem.alloc(str)); }  //memory leak
 			catch (int e) { Error::error(e); break; }
