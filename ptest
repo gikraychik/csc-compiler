@@ -1,7 +1,65 @@
-label 1;
-init x = 2;
-define y as TMP20;
-y = 5;
-delete y;
+define ind1 as IND1;
+define ind2 as IND2;
+define ind3 as IND3;
+define ind4 as IND4;
+define s1 as S1;
+define s2 as S2;
+define s3 as S3;
+define s4 as S4;
+define dout as DOUT;
+define t1 as T1;
+define t2 as T2;
+define t3 as T3;
+define t4 as T4;
+define isStand as CTRL_STATE;
+define checkSum as EE_SUM;
+define led0 as LED0;
+define led1 as LED1;
+define led2 as LED2;
+define led3 as LED3;
+define video as VIDEO_MODE;
+define long_up as LONG_BTN_UP;
+define long_down as LONG_BTN_DOWN;
+define enter as BTN_ENTR_STATUS;
+define up as BTN_UP;
+define down as BTN_DOWN;
 
-goto 7;
+label 0;
+isStand = 0;
+ind2 = 1;
+goto 1;
+
+label 1;
+init l0;
+init output;
+if (video == 0) { l0 = 1; output = t2; }
+if (video == 1) { l0 = 118; output = t1; }
+if (video == 2) { l0 = 236; output = t3; }
+if (video == 3) { l0 = 236; output = t3; }
+led0 = l0;
+delete l0;
+print(output, 1);
+delete output;
+goto 2;
+
+label 2;
+init x = !enter;
+init d = down;
+init u = up;
+init v = video;
+init y = (v == 0) && x;
+if (y && d) { v = 2; }
+if (y && u) { v = 1; }
+y = (video == 1) && x;
+if (y && u) { v = 2; }
+if (y && d) { v = 0; }
+y = (video == 2) && x;
+if (y && u) { v = 0; }
+if (y && d) { v = 1; }
+delete x;
+delete y;
+delete u;
+delete d;
+video = v;
+delete v;
+goto 1;

@@ -13,6 +13,16 @@ define t3 as T3;
 define t4 as T4;
 define isStand as CTRL_STATE;
 define checkSum as EE_SUM;
+define led0 as LED0;
+define led1 as LED1;
+define led2 as LED2;
+define led3 as LED3;
+define video as VIDEO_MODE;
+define long_up as LONG_BTN_UP;
+define long_down as LONG_BTN_DOWN;
+define enter as BTN_ENTR_STATUS;
+define up as BTN_UP;
+define down as BTN_DOWN;
 
 
 label 0;
@@ -33,13 +43,59 @@ t3 = 24;
 isStand = 1;
 define z as TMP20;
 z = 4;
-delete z;
+erase z;
 goto 3;
 
 label 3;
-define y as TMP20;
+define next_state as TMP20;
 init x = 12580 - (t3 + t4 + isStand);
 checkSum = x;
+x = next_state;
+erase next_state;
+goto x;
 delete x;
-goto y;
-delete y;
+
+label 4;
+s1 = 0; s2 = 0; s3 = 0; s4 = 0;
+ind1 = 0; ind2 = 0; ind3 = 0; ind4 = 0;
+video = 0;
+isStand = 0;
+init x = long_up && long_down;
+x = x ? 3 : 4;
+define y as TMP20;
+y = 5;
+erase y;
+goto x;
+delete x;
+
+label 5;
+if (video == 0) { led0 = 234; }
+if (video == 1) { led0 = 118; }
+if (video == 2) { led0 = 236; }
+if (video == 3) { led0 = 236; }
+goto 6;
+
+label 6;
+init x = !enter;
+init y = (video == 0) && x;
+if (y && down) { video = 2; }
+if (y && up) { video = 1; }
+y = (video == 1) && x;
+if (y && up) { video = 2; }
+if (y && down) { video = 0; }
+y = (video == 2) && x;
+if (y && up) { video = 0; }
+if (y && down) { video = 1; }
+goto 5;
+
+
+
+
+
+
+
+
+
+
+
+
