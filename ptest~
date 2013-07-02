@@ -75,6 +75,7 @@ y = 4;
 erase y;
 init x = standTimer == 0;
 x = x ? 5 : 10;
+if (standTimer == 0) { standTimer = 750; }
 goto x;
 delete x;
 
@@ -91,7 +92,10 @@ delete l0;
 print(output, 1);
 erase des;
 delete output;
-goto 6;
+define after as TMP24;
+after = 6;
+erase after;
+goto 10;
 
 label 6;
 init outside = t1;
@@ -166,7 +170,14 @@ delete curDes;
 erase des;
 delete x; delete y; delete u; delete d;
 video = v; delete v;
-goto 8;
+init next = 8;
+if (standTimer == 0)
+{
+	standTimer = 750;
+	next = 4;
+}
+goto next;
+delete next;
 
 label 8;
 define des as TMP25;
@@ -188,8 +199,8 @@ init time = 62500;
 init delta = time - timerMSec;
 timerMSec = time;
 delete time;
-if (!upStatus || !downStatus) { standTimer = 750; }
 
+if (!upStatus || !downStatus) { standTimer = 750; }
 if (delta > standTimer) { standTimer = 0; }
 if (delta <= standTimer) { standTimer = standTimer - delta; }
 
@@ -198,6 +209,4 @@ init x = next_state;
 erase next_state;
 goto x;
 delete x;
-
-
 
