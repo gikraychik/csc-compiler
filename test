@@ -101,4 +101,14 @@ if (tmp1 || tmp2) { inside = oldt2; }
 if (!tmp1 && !tmp2) { inside = t2; }
 delete tmp1; delete tmp2;
 
+init v;
+if (outside >= 38) { v = 4; }
+if ((outside >= 36) && (outside < 38)) { v = 5; }
+if ((outside >= 34) && (outside < 36)) { v = 6; }
+if ((outside >= 32) && (outside < 34)) { v = 7; }
+if ((outside >= 30) && (outside < 32)) { v = 8; }
+if ((outside >= 20) && (outside < 30)) { v = 9; }
+if (outside < 20) { v = 10; }
+voltage = v;
+delete v;
 

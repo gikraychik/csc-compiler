@@ -30,6 +30,7 @@ define t1Last as T1_LAST;
 define t2Last as T2_LAST;
 define timerSec as TIMER_SEC;
 define timerMSec as TIMER_MSEC;
+define voltage as PWM_PERCENT;
 init global standTimer;
 init global maxDes;
 init global minDes;
@@ -98,7 +99,7 @@ init error2 = (video == 0) && ((t2Last > 30) || (t2 < 0-40) || (t2 > 50));
 if ((video == 0) && !error2) { l0 = 0; output = t2; }
 if ((video == 1) && !error1) { l0 = 118; output = t1; }
 if (video == 2) { l0 = 236; output = t3; }
-if (video == 3) { l0 = 238; output = des; }
+if (video == 3) { l0 = 236; output = des; }
 led0 = l0;
 delete l0;
 print(output, TMP21);
@@ -120,8 +121,20 @@ erase after;
 goto 10;
 
 label 6;
-init outside = t1;
-init inside = t2;
+init outside;
+init inside;
+init tmp1 = (t1 - oldt1 > 5);
+init tmp2 = (oldt1 - t1 > 5);
+if (tmp1 || tmp2) { outside = oldt1; }
+if (!tmp1 && !tmp2) { outside = t1; oldt1 = t1; }
+tmp1 = (t2 - oldt2 > 5);
+tmp2 = (oldt2 - t2 > 5);
+if (tmp1 || tmp2) { inside = oldt2; }
+if (!tmp1 && !tmp2) { inside = t2; oldt2 = t2; }
+delete tmp1; delete tmp2;
+if ((video == 1) && ((t1Last > 30) || (outside < 0 - 40) || (outside > 50))) { outside = 24; }
+if ((video == 0) && ((t2Last > 30) || (inside < 0-40) || (inside > 50))) { inside = 24; }
+
 init desired = t3;
 init rele2 = s2;
 init rele3 = s3;
@@ -167,6 +180,7 @@ init x = !enter;
 init d = down;
 init u = up;
 init v = video;
+if (upStatus && downStatus) { u = 0; d = 0; }
 init y = (video == 0) && x;
 if (y && d) { v = 2; }
 if (y && u) { v = 1; }
