@@ -33,7 +33,7 @@ init global maxDes;
 init global minDes;
 
 label 0;
-s1 = 1; ind2 = 1; ind3 = 1;
+s1 = 1; ind2 = 1; ind3 = 1; isStand = 1;
 timerMSec = 62500;
 standTimer = 750;
 maxDes = 28; minDes = 20;
@@ -170,16 +170,12 @@ goto 8;
 
 label 8;
 define des as TMP25;
-define afterState as TMP24;
-init next;
-init x = video == 3;
-if (!x) { t3 = des; next = 3; afterState = 5; }
-if (x) { next = 5; }
-delete x;
+if (!(video == 3)) { t3 = des; }
 erase des;
+define afterState as TMP24;
+afterState = 5;
 erase afterState;
-goto next;
-delete next;
+goto 3;
 
 label 9;
 define y as TMP25;
