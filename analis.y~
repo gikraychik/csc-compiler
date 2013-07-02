@@ -513,7 +513,6 @@ assign :	NAME ASSIGN expr SEMICOLON
 			{
 				if (mem.isDefine($<string>1) || mem.isGlobal($<string>1))
 				{
-					cout << "lol";
 					string tmp = string($<string>1);
 					string *int_name = new string(mem.getInnerName(tmp));  //memory leak
 					asmr.move($<string>3, int_name->data());
