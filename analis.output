@@ -84,7 +84,7 @@ Grammar
 
    43 $@1: /* empty */
 
-   44 condition: IF OBRACE NAME $@1 CBRACE block
+   44 condition: IF OBRACE expr $@1 CBRACE block
 
 
 Terminals, with rules where they appear
@@ -92,7 +92,7 @@ Terminals, with rules where they appear
 $end (0) 0
 error (256)
 NUMBER (258) 6 28 34 35 36
-NAME (259) 16 29 31 32 37 38 39 40 41 44
+NAME (259) 16 29 31 32 37 38 39 40 41
 REF (260)
 COLON (261)
 SEMICOLON (262) 6 16 31 32 33 34 35 36 37 38 39 40 41
@@ -159,7 +159,7 @@ command (57)
 assign (58)
     on left: 16, on right: 9
 expr (59)
-    on left: 17, on right: 16 31 35 37
+    on left: 17, on right: 16 31 35 37 44
 int_expr (60)
     on left: 18 19 20 21 22 23 24 25 26 27 28 29 30, on right: 17 18
     19 20 21 22 23 24 25 26 27 30
@@ -376,7 +376,7 @@ state 19
 
 state 20
 
-   44 condition: IF . OBRACE NAME $@1 CBRACE block
+   44 condition: IF . OBRACE expr $@1 CBRACE block
 
     OBRACE  shift, and go to state 38
 
@@ -535,9 +535,15 @@ state 37
 
 state 38
 
-   44 condition: IF OBRACE . NAME $@1 CBRACE block
+   44 condition: IF OBRACE . expr $@1 CBRACE block
 
-    NAME  shift, and go to state 54
+    NUMBER  shift, and go to state 47
+    NAME    shift, and go to state 48
+    OBRACE  shift, and go to state 49
+    NOT     shift, and go to state 50
+
+    expr      go to state 54
+    int_expr  go to state 52
 
 
 state 39
@@ -688,7 +694,7 @@ state 53
 
 state 54
 
-   44 condition: IF OBRACE NAME . $@1 CBRACE block
+   44 condition: IF OBRACE expr . $@1 CBRACE block
 
     $default  reduce using rule 43 ($@1)
 
@@ -922,7 +928,7 @@ state 75
 
 state 76
 
-   44 condition: IF OBRACE NAME $@1 . CBRACE block
+   44 condition: IF OBRACE expr $@1 . CBRACE block
 
     CBRACE  shift, and go to state 92
 
@@ -1151,7 +1157,7 @@ state 91
 
 state 92
 
-   44 condition: IF OBRACE NAME $@1 CBRACE . block
+   44 condition: IF OBRACE expr $@1 CBRACE . block
 
     OBLOCK  shift, and go to state 97
 
@@ -1211,7 +1217,7 @@ state 97
 
 state 98
 
-   44 condition: IF OBRACE NAME $@1 CBRACE block .
+   44 condition: IF OBRACE expr $@1 CBRACE block .
 
     $default  reduce using rule 44 (condition)
 

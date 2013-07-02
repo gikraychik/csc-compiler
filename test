@@ -3,8 +3,12 @@ define lol as VIDEO_MODE;
 
 label 1;
 
-init x = 2;
-init y = x;
-x = 3;
+init x = 10;
+init y = x + 2;
+init z;
+if (x + y) {
+	if (x-y) { z = x; }
+	y = z + 3;
+}
 
 goto 1;

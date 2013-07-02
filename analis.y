@@ -357,7 +357,7 @@ void yyerror(const char *s)
 
 Memory mem(30);
 Assembler asmr(&mem);
-
+bool isV = false;
 
 void print(char c, int number)
 {
@@ -467,28 +467,39 @@ command :	assign
 		;
 assign :	NAME ASSIGN expr SEMICOLON
 		{
-			string tmp($<string>1);
-			bool isV = isVar($<string>3);
-			if (isV) { char *s = strdup($<string>3); delSht(s); $<string>3 = s; }  //memory leak
-			if (isV)
+			if (mem.ifs.empty())
 			{
-				tmp = string($<string>1);
-				string *int_name = new string(mem.getInnerName(tmp));  //memory leak
-				//cout << tmp << endl;
-				asmr.move($<string>3, int_name->data());
+				string tmp($<string>1);
+				if (isV)
+				{
+					tmp = string($<string>1);
+					string *int_name = new string(mem.getInnerName(tmp));  //memory leak
+					//cout << tmp << endl;
+					asmr.move($<string>3, int_name->data());
+				}
+				else
+				{
+					mem.free_mem(tmp);
+					string *int_name = new string($<string>3);
+					mem.define(tmp, *int_name);	
+				}
+				//mem.free_cell($<string>3);
 			}
 			else
 			{
-				mem.free_mem(tmp);
-				string *int_name = new string($<string>3);
-				mem.define(tmp, *int_name);	
+				string tmp($<string>1);
+				string *int_name = new string(mem.getInnerName(tmp));  //memory leak
+				asmr.move($<string>3, int_name->data());
+				if (!isV) { mem.free_cell($<string>3); }
 			}
-			//mem.free_cell($<string>3);
+			isV = false;
 		}
 		;
 expr :		int_expr
 		{
-			$<string>$ = $<string>1;
+			isV = isVar($<string>1);
+			if (isV) { char *s = strdup($<string>1); delSht(s); $<string>1 = s; }  //memory leak
+			$<string>$ = $<string>1;	
 		}
 		;
 int_expr:	int_expr ADD int_expr
@@ -697,12 +708,21 @@ block :		OBLOCK commands CBLOCK
 		//| command
 		;	
 condition :	//IF OBRACE expr CBRACE block ELSE block
-		IF OBRACE NAME
+		IF OBRACE expr
 		{
 			string tmp($<string>3);
-			string *int_name = new string(mem.getInnerName(tmp));
-			string *new_mem = new string(mem.numberToInnerName(mem.alloc()));
-			asmr.move(int_name->data(), new_mem->data());
+			tmp = string($<string>3);
+			string *int_name = new string(tmp.data());
+			string *new_mem;
+			if (!isV)
+			{
+				new_mem = new string(int_name->data());
+			}
+			else
+			{			
+				new_mem = new string(mem.numberToInnerName(mem.alloc()));  //for stack
+				//asmr.move(int_name->data(), new_mem->data());  //may be should be returned
+			}
 			if (mem.ifs.empty())
 			{
 				mem.ifs.push(new_mem);
@@ -710,9 +730,10 @@ condition :	//IF OBRACE expr CBRACE block ELSE block
 			else
 			{
 				string *top = mem.ifs.top();
-				asmr._and(int_name->data(), top->data(), new_mem->data());
+				asmr._and(top->data(), int_name->data(), new_mem->data());
 				mem.ifs.push(new_mem);
 			}
+			isV = false;
 		}
 		CBRACE block
 		{
