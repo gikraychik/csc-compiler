@@ -91,17 +91,6 @@ delete y;
 goto 5;
 
 
-x = !x;
-y = (video == 2) && x;
-if (y) { video = 3; }
-y = (video == 3) && x;
-init curDes = des;
-if ((y && up) && (curDes < maxDes)) { curDes = curDes + 1; }
-if ((y && down) && (curDes > minDes)) { curDes = curDes - 1; }
-if (!x) { video = 2; }
-des = curDes;
-delete curDes;
-
 
 
 

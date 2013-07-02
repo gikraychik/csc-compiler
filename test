@@ -91,6 +91,14 @@ delete y;
 goto 5;
 
 
-
+init tmp1 = (t1 - oldt1 > 5);
+init tmp2 = (oldt1 - t1 > 5);
+if (tmp1 || tmp2) { outside = oldt1; }
+if (!tmp1 && !tmp2) { outside = t1; }
+tmp1 = (t2 - oldt2 > 5);
+tmp2 = (oldt2 - t2 > 5);
+if (tmp1 || tmp2) { inside = oldt2; }
+if (!tmp1 && !tmp2) { inside = t2; }
+delete tmp1; delete tmp2;
 
 
