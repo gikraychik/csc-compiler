@@ -76,7 +76,7 @@ delete x;
 label 4;
 oldt1 = t1; oldt2 = t2;
 s1 = 0; s2 = 0; s3 = 0; s4 = 0;
-ind1 = 0; ind2 = 0; ind3 = 0; ind4 = 0; ind5 = 0;
+ind1 = 0; ind3 = 0; ind4 = 0; ind5 = 0;
 led0 = 0; led1 = 0; led2 = 0; led3 = 0;
 video = 0;
 isStand = 0;
@@ -94,8 +94,8 @@ label 5;
 define des as TMP25;
 init l0 = 0;
 init output;
-init error1 = (video == 1) && ((t1Last > 30) || (t1 < 0 - 40) || (t1 > 50));
-init error2 = (video == 0) && ((t2Last > 30) || (t2 < 0-40) || (t2 > 50));
+init error1 = (video == 1) && ((t1Last > 60) || (t1 < 0 - 40) || (t1 > 50));
+init error2 = (video == 0) && ((t2Last > 60) || (t2 < 0-40) || (t2 > 50));
 if ((video == 0) && !error2) { l0 = 0; output = t2; }
 if ((video == 1) && !error1) { l0 = 118; output = t1; }
 if (video == 2) { l0 = 236; output = t3; }
@@ -132,8 +132,8 @@ tmp2 = (oldt2 - t2 > 5);
 if (tmp1 || tmp2) { inside = oldt2; }
 if (!tmp1 && !tmp2) { inside = t2; oldt2 = t2; }
 delete tmp1; delete tmp2;
-if ((video == 1) && ((t1Last > 30) || (outside < 0 - 40) || (outside > 50))) { outside = 24; }
-if ((video == 0) && ((t2Last > 30) || (inside < 0-40) || (inside > 50))) { inside = 24; }
+if ((t1Last > 60) || (outside < 0 - 40) || (outside > 50)) { outside = 24; }
+if ((t2Last > 60) || (inside < 0-40) || (inside > 50)) { inside = 24; }
 
 init desired = t3;
 init rele2 = s2;
@@ -160,6 +160,9 @@ if (tmp2 && (rele4 == 1)) { rele4 = 0; }
 delete tmp2;
 delete tmp; delete tmp1;
 
+if (rele2 == 0) { timer = 30000; }
+if (timer > 0) { rele2 = 0; rele3 = 0; }
+
 if ((rele2 == 1) || (rele4 == 1)) { ind4 = 1; }
 if (!((rele2 == 1) || (rele4 == 1))) { ind4 = 0; }
 if (rele3 == 1) { ind5 = 1; }
@@ -167,7 +170,6 @@ if (rele3 == 0) { ind5 = 0; }
 
 s2 = rele2; s3 = rele3; s4 = rele4;
 delete rele2; delete rele3; delete rele4;
-
 delete inside;
 delete outside;
 delete desired;
@@ -246,6 +248,9 @@ if (delta <= standTimer) { standTimer = standTimer - delta; }
 if (!(video == 0) || !enter) { adminTimer = 750; }
 if (delta > adminTimer) { adminTimer = 0; }
 if (delta <= adminTimer) { adminTimer = adminTimer - delta; }
+
+if (delta > timer) { timer = 0; }
+if (delta <= timer) { timer = timer - delta; }
 
 delete delta;
 init x = next_state;
