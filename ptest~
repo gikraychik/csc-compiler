@@ -129,34 +129,28 @@ init rele4 = s4;
 
 init tmp1 = (outside >= 15);
 init tmp2 = (inside >= desired + 1);
-init i4;
 tmp2 = tmp1 && tmp2;
-if ( tmp2 && (rele2 == 0)) { rele2 = 1; i4 = 1; }
+if ( tmp2 && (rele2 == 0)) { rele2 = 1; }
 if (!tmp2 && (rele3 == 0) && (rele2 == 1)) { rele2 = 0; }
-if (!tmp2 && (rele2 == 0) && (rele4 == 0)) { i4 = 0; }
 delete tmp1; delete tmp2;
-ind4 = i4;
-delete i4;
 
-init i5;
 init tmp = (outside >= 0-5) && (outside < 20);
-if (tmp && (inside < desired - 1)) { rele2 = 1; rele3 = 1; i5 = 1; }
-if ((!tmp || (inside >= desired)) && (rele3 == 1)) { rele2 = 0; rele3 = 0; i5 = 0; }
+if (tmp && (inside < desired - 1)) { rele2 = 1; rele3 = 1; }
+if ((!tmp || (inside >= desired)) && (rele3 == 1)) { rele2 = 0; rele3 = 0; }
 delete tmp;
-ind5 = i5;
-delete i5;
 
-init i4 = ind4;
 init tmp = (outside >= 18);
-if (tmp && (inside >= desired + 1)) { rele4 = 1; i4 = 1; }
+if (tmp && (inside >= desired + 1)) { rele4 = 1; }
 init tmp1 = inside < desired;
 init tmp2 = (!tmp || tmp1);
 if (tmp2 && (rele4 == 1)) { rele4 = 0; }
-if (tmp2 && (rele2 == 0) && (rele4 == 1)) { i4 = 0; }
 delete tmp2;
 delete tmp; delete tmp1;
-ind4 = i4;
-delete i4;
+
+if ((rele2 == 1) || (rele4 == 1)) { ind4 = 1; }
+if (!((rele2 == 1) || (rele4 == 1))) { ind4 = 0; }
+if (rele3 == 1) { ind5 = 1; }
+if (rele3 == 0) { ind5 = 0; }
 
 s2 = rele2; s3 = rele3; s4 = rele4;
 delete rele2; delete rele3; delete rele4;
