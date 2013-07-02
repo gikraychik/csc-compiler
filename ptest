@@ -201,6 +201,11 @@ delete curDes;
 erase des;
 delete x; delete y; delete u; delete d;
 video = v; delete v;
+init wasIn = 0;
+if ((adminTimer == 0) && (minDes == 20)) { wasIn = 1; minDes = 10; maxDes = 30; }
+if ((adminTimer == 0) && (minDes == 10) && !wasIn) { minDes = 20; maxDes = 28; }
+if (adminTimer == 0) { adminTimer = 750; }
+delete wasIn;
 init next = 8;
 if (standTimer == 0)
 {
@@ -234,6 +239,10 @@ delete time;
 if (!upStatus || !downStatus) { standTimer = 750; }
 if (delta > standTimer) { standTimer = 0; }
 if (delta <= standTimer) { standTimer = standTimer - delta; }
+
+if (!(video == 0) || !enter) { adminTimer = 750; }
+if (delta > adminTimer) { adminTimer = 0; }
+if (delta <= adminTimer) { adminTimer = adminTimer - delta; }
 
 delete delta;
 init x = next_state;

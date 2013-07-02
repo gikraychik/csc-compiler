@@ -121,13 +121,15 @@ goto 10;
 label 6;
 init outside;
 init inside;
-init tmp = (t1 - oldt1 > 5) || (oldt1 - t1 > 5);
-if (tmp) { outside = oldt1; }
-if (!tmp) { outside = t1; }
-tmp = (t2 - oldt2 > 5) || (oldt2 - t2 > 5);
-if (tmp) { inside = oldt2; }
-if (!tmp) { inside = oldt2; }
-delete tmp;
+init tmp1 = (t1 - oldt1 > 5);
+init tmp2 = (oldt1 - t1 > 5);
+if (tmp1 || tmp2) { outside = oldt1; }
+if (!tmp1 && !tmp2) { outside = t1; }
+tmp1 = (t2 - oldt2 > 5);
+tmp2 = (oldt2 - t2 > 5);
+if (tmp1 || tmp2) { inside = oldt2; }
+if (!tmp1 && !tmp2) { inside = t2; }
+delete tmp1; delete tmp2;
 
 init desired = t3;
 init rele2 = s2;
@@ -199,6 +201,10 @@ delete curDes;
 erase des;
 delete x; delete y; delete u; delete d;
 video = v; delete v;
+init wasIn = 0;
+if ((adminTimer == 0) && (minDes == 20)) { wasIn = 1; minDes = 10; maxDes = 30; }
+if ((adminTimer == 0) && (minDes == 10) && !wasIn) { minDes = 20; maxDes = 28; }
+if (adminTimer == 0) { adminTimer = 750; }
 init next = 8;
 if (standTimer == 0)
 {
@@ -232,6 +238,10 @@ delete time;
 if (!upStatus || !downStatus) { standTimer = 750; }
 if (delta > standTimer) { standTimer = 0; }
 if (delta <= standTimer) { standTimer = standTimer - delta; }
+
+if (!(video == 0) || !enter) { adminTimer = 750; }
+if (delta > adminTimer) { adminTimer = 0; }
+if (delta <= adminTimer) { adminTimer = adminTimer - delta; }
 
 delete delta;
 init x = next_state;
