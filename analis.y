@@ -695,7 +695,8 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 			string where = string("LED") + string(mem.itoa($<number>5, tmp));
 			free(tmp);*/
 			asmr.cd($<string>3, $<string>5);
-			mem.free_cell($<string>3);
+			if (!isV) { mem.free_cell($<string>3); }
+			isV = false;
 		}
 		/*| PRINT OBRACE NAME COMA NUMBER CBRACE SEMICOLON
 		{

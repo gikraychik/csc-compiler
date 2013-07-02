@@ -951,8 +951,8 @@ static const yytype_uint16 yyrline[] =
        0,   483,   483,   484,   485,   487,   488,   490,   494,   498,
      499,   501,   502,   503,   504,   505,   506,   507,   508,   510,
      549,   556,   561,   566,   571,   576,   581,   586,   591,   596,
-     601,   620,   626,   642,   647,   670,   677,   687,   691,   708,
-     715,   729,   738,   745,   752,   759,   768,   773,   772
+     601,   620,   626,   642,   647,   670,   677,   687,   691,   709,
+     716,   730,   739,   746,   753,   760,   769,   774,   773
 };
 #endif
 
@@ -2253,14 +2253,15 @@ yyreduce:
 			string where = string("LED") + string(mem.itoa($<number>5, tmp));
 			free(tmp);*/
 			asmr.cd((yyvsp[(3) - (7)].string), (yyvsp[(5) - (7)].string));
-			mem.free_cell((yyvsp[(3) - (7)].string));
+			if (!isV) { mem.free_cell((yyvsp[(3) - (7)].string)); }
+			isV = false;
 		}
     break;
 
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 709 "analis.y"
+#line 710 "analis.y"
     {
 			asmr.move((yyvsp[(2) - (3)].string), "NETLIST_SELECT");
 			if (!isV) { mem.free_cell((yyvsp[(2) - (3)].string)); }
@@ -2271,7 +2272,7 @@ yyreduce:
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 716 "analis.y"
+#line 717 "analis.y"
     {
 			string *ext_name = new string((yyvsp[(3) - (6)].string));  //memory leak
 			string *int_name = new string((yyvsp[(5) - (6)].string));  //memory leak
@@ -2290,7 +2291,7 @@ yyreduce:
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 730 "analis.y"
+#line 731 "analis.y"
     {
 			string str((yyvsp[(3) - (4)].string));
 			string *int_name;
@@ -2303,7 +2304,7 @@ yyreduce:
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 739 "analis.y"
+#line 740 "analis.y"
     {
 			string *ext_name = new string((yyvsp[(2) - (5)].string));  //memory leak
 			string *int_name = new string((yyvsp[(4) - (5)].string));  //memory leak
@@ -2314,7 +2315,7 @@ yyreduce:
   case 43:
 
 /* Line 1806 of yacc.c  */
-#line 746 "analis.y"
+#line 747 "analis.y"
     {
 			string ext_name = string((yyvsp[(2) - (3)].string));	
 			try { mem.free_mem(ext_name); }
@@ -2325,7 +2326,7 @@ yyreduce:
   case 44:
 
 /* Line 1806 of yacc.c  */
-#line 753 "analis.y"
+#line 754 "analis.y"
     {
 			string ext_name((yyvsp[(2) - (3)].string));
 			try { mem.erase(ext_name); }
@@ -2336,7 +2337,7 @@ yyreduce:
   case 45:
 
 /* Line 1806 of yacc.c  */
-#line 760 "analis.y"
+#line 761 "analis.y"
     {
 			string res((yyvsp[(1) - (8)].string));
 			string cond((yyvsp[(3) - (8)].string));
@@ -2349,7 +2350,7 @@ yyreduce:
   case 47:
 
 /* Line 1806 of yacc.c  */
-#line 773 "analis.y"
+#line 774 "analis.y"
     {
 			string tmp((yyvsp[(3) - (3)].string));
 			tmp = string((yyvsp[(3) - (3)].string));
@@ -2381,7 +2382,7 @@ yyreduce:
   case 48:
 
 /* Line 1806 of yacc.c  */
-#line 800 "analis.y"
+#line 801 "analis.y"
     {
 			mem.free_cell(mem.ifs.top()->data());
 			delete mem.ifs.top();
@@ -2392,7 +2393,7 @@ yyreduce:
 
 
 /* Line 1806 of yacc.c  */
-#line 2396 "analis.tab.c"
+#line 2397 "analis.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2623,6 +2624,6 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 806 "analis.y"
+#line 807 "analis.y"
 
 

@@ -688,13 +688,13 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 		{
 			print(*($<string>3), $<number>5);
 		}
-		| PRINT OBRACE expr COMA NUMBER CBRACE SEMICOLON
+		| PRINT OBRACE expr COMA NAME CBRACE SEMICOLON
 		{
-			if ($<number>5>4) { Error::error(9); break; }
+			/*if ($<number>5>4) { Error::error(9); break; }
 			char *tmp = (char *)malloc(33*sizeof(char));
 			string where = string("LED") + string(mem.itoa($<number>5, tmp));
-			free(tmp);
-			asmr.cd($<string>3, where.data());
+			free(tmp);*/
+			asmr.cd($<string>3, $<string>5);
 			mem.free_cell($<string>3);
 		}
 		/*| PRINT OBRACE NAME COMA NUMBER CBRACE SEMICOLON

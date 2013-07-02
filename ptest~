@@ -26,6 +26,8 @@ define up as BTN_UP;
 define down as BTN_DOWN;
 define upStatus as BTN_UP_STATUS;
 define downStatus as BTN_DOWN_STATUS;
+define t1Last as T1_LAST;
+define t2Last as T2_LAST;
 define timerSec as TIMER_SEC;
 define timerMSec as TIMER_MSEC;
 init global standTimer;
@@ -71,6 +73,7 @@ goto x;
 delete x;
 
 label 4;
+oldt1 = t1; oldt2 = t2;
 s1 = 0; s2 = 0; s3 = 0; s4 = 0;
 ind1 = 0; ind2 = 0; ind3 = 0; ind4 = 0;
 led0 = 0; led1 = 0; led2 = 0; led3 = 0;
@@ -95,7 +98,19 @@ if (video == 2) { l0 = 236; output = t3; }
 if (video == 3) { l0 = 238; output = des; }
 led0 = l0;
 delete l0;
-print(output, 1);
+print(output, TMP21);
+
+init error1 = error1 && ((t1Last > 30) || (t1 < 0 - 40) || (t1 > 50));
+init error2 = (video == 0) && ((t2Last > 30) || (t2 < 0-40) || (t2 > 50));
+init error = error1 || error2;
+define x1 as TMP21;
+define x2 as TMP22;
+define x3 as TMP23;
+if (error) { x1 = 158; x2 = 10; x3 = 10; }
+delete error1; delete error2; delete error;
+led1 = x1; led2 = x2; led3 = x3;
+erase x1; erase x2; erase x3;
+
 erase des;
 delete output;
 define after as TMP24;
