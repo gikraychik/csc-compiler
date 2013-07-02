@@ -90,18 +90,18 @@ delete x;
 
 label 5;
 define des as TMP25;
-init l0;
+init l0 = 0;
 init output;
-if (video == 0) { l0 = 1; output = t2; }
-if (video == 1) { l0 = 118; output = t1; }
+init error1 = (video == 1) && ((t1Last > 30) || (t1 < 0 - 40) || (t1 > 50));
+init error2 = (video == 0) && ((t2Last > 30) || (t2 < 0-40) || (t2 > 50));
+if ((video == 0) && !error2) { l0 = 0; output = t2; }
+if ((video == 1) && !error1) { l0 = 118; output = t1; }
 if (video == 2) { l0 = 236; output = t3; }
 if (video == 3) { l0 = 238; output = des; }
 led0 = l0;
 delete l0;
 print(output, TMP21);
 
-init error1 = (video == 1) && ((t1Last > 30) || (t1 < 0 - 40) || (t1 > 50));
-init error2 = (video == 0) && ((t2Last > 30) || (t2 < 0-40) || (t2 > 50));
 init error = error1 || error2;
 define x1 as TMP21;
 define x2 as TMP22;
@@ -119,8 +119,16 @@ erase after;
 goto 10;
 
 label 6;
-init outside = t1;
-init inside = t2;
+init outside;
+init inside;
+init tmp = (t1 - oldt1 > 5) || (oldt1 - t1 > 5);
+if (tmp) { outside = oldt1; }
+if (!tmp) { outside = t1; }
+tmp = (t2 - oldt2 > 5) || (oldt2 - t2 > 5);
+if (tmp) { inside = oldt2; }
+if (!tmp) { inside = oldt2; }
+delete tmp;
+
 init desired = t3;
 init rele2 = s2;
 
