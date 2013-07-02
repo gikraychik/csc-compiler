@@ -2,6 +2,7 @@ define ind1 as IND1;
 define ind2 as IND2;
 define ind3 as IND3;
 define ind4 as IND4;
+define ind5 as IND5;
 define s1 as S1;
 define s2 as S2;
 define s3 as S3;
@@ -23,49 +24,76 @@ define long_down as LONG_BTN_DOWN;
 define enter as BTN_ENTR_STATUS;
 define up as BTN_UP;
 define down as BTN_DOWN;
+define upStatus as BTN_UP_STATUS;
+define downStatus as BTN_DOWN_STATUS;
+define timerSec as TIMER_SEC;
+define timerMSec as TIMER_MSEC;
+init global standTimer;
+init global maxDes;
+init global minDes;
 
 label 0;
-isStand = 0;
-ind2 = 1;
-goto 1;
+s1 = 1; ind2 = 1; ind3 = 1;
+timerMSec = 62500;
+standTimer = 750;
+maxDes = 28; minDes = 20;
+init x = t3 + t4 + isStand + checkSum == 12580;
+x = x ? 1 : 2;
+goto x;
+delete x;
 
 label 1;
+init x;
+x = isStand ? 4 : 5;
+goto x;
+delete x;
+
+label 2;
+t3 = 24;
+isStand = 1;
+define z as TMP24;
+z = 4;
+erase z;
+goto 3;
+
+label 3;
+define next_state as TMP24;
+init x = 12580 - (t3 + t4 + isStand);
+checkSum = x;
+x = next_state;
+erase next_state;
+goto x;
+delete x;
+
+label 4;
+s1 = 0; s2 = 0; s3 = 0; s4 = 0;
+ind1 = 0; ind2 = 0; ind3 = 0; ind4 = 0;
+video = 0;
+isStand = 0;
+define y as TMP24;
+y = 4;
+erase y;
+init x = standTimer == 0;
+x = x ? 5 : 10;
+goto x;
+delete x;
+
+label 5;
+define des as TMP25;
 init l0;
 init output;
 if (video == 0) { l0 = 1; output = t2; }
 if (video == 1) { l0 = 118; output = t1; }
 if (video == 2) { l0 = 236; output = t3; }
-if (video == 3) { l0 = 236; output = t3; }
+if (video == 3) { l0 = 238; output = des; }
 led0 = l0;
 delete l0;
 print(output, 1);
+erase des;
 delete output;
-goto 2;
+goto 6;
 
-label 2;
-init x = !enter;
-init d = down;
-init u = up;
-init v = video;
-init y = (v == 0) && x;
-if (y && d) { v = 2; }
-if (y && u) { v = 1; }
-y = (video == 1) && x;
-if (y && u) { v = 2; }
-if (y && d) { v = 0; }
-y = (video == 2) && x;
-if (y && u) { v = 0; }
-if (y && d) { v = 1; }
-delete x;
-delete y;
-delete u;
-delete d;
-video = v;
-delete v;
-goto 3;
-
-label 3;
-
+label 6;
 init outside = t1;
 init inside = t2;
 init desired = t3;
@@ -73,8 +101,10 @@ init rele2 = s2;
 
 init tmp = (outside >= 15) && (inside >= desired + 1);
 init i4;
-rele2 = tmp ? 1 : 0;
-i4 = tmp ? 1 : 0;
+init rele4 = !s4;
+if (tmp) { rele2 = 1; i4 = 1; }
+if (!tmp && rele4) { rele2 = 0; i4 = 0; }
+delete rele4;
 delete tmp;
 ind4 = i4;
 delete i4;
@@ -89,7 +119,7 @@ ind5 = i5;
 delete i5;
 
 init rele4 = s4;
-i4 = ind4;
+init i4 = ind4;
 init tmp = (outside >= 18);
 if (tmp && (inside >= desired + 1)) { rele4 = 1; i4 = 1; }
 if (!tmp || (inside < desired)) { rele4 = 0; i4 = 0; }
@@ -104,8 +134,74 @@ delete rele4;
 delete inside;
 delete outside;
 delete desired;
-goto 2;
+goto 7;
 
+label 7;
+define des as TMP25;
+if (!(video == 3)) { des = t3; }
+init x = !enter;
+init d = down;
+init u = up;
+init v = video;
+init y = (video == 0) && x;
+if (y && d) { v = 2; }
+if (y && u) { v = 1; }
+y = (video == 1) && x;
+if (y && u) { v = 2; }
+if (y && d) { v = 0; }
+y = (video == 2) && x;
+if (y && u) { v = 0; }
+if (y && d) { v = 1; }
+
+x = !x;
+if ((video == 2) && x) { v = 3; }
+y = (video == 3) && x;
+init curDes = des;
+if ((y && u) && (curDes < maxDes)) { curDes = curDes + 1; }
+if ((y && d) && (curDes > minDes)) { curDes = curDes - 1; }
+if (!x && (video == 3)) { v = 2; }
+des = curDes;
+delete curDes;
+
+erase des;
+delete x; delete y; delete u; delete d;
+video = v; delete v;
+goto 8;
+
+label 8;
+define des as TMP25;
+define afterState as TMP24;
+init next;
+init x = video == 3;
+if (!x) { t3 = des; next = 3; afterState = 5; }
+if (x) { next = 5; }
+delete x;
+erase des;
+erase afterState;
+goto next;
+delete next;
+
+label 9;
+define y as TMP25;
+erase y;
+goto 5;
+
+label 10;
+define next_state as TMP24;
+init time = 62500;
+init delta = time - timerMSec;
+timerMSec = time;
+delete time;
+if (!upStatus || !downStatus) { standTimer = 750; }
+
+if (delta > standTimer) { standTimer = 0; }
+if (delta <= standTimer) { standTimer = standTimer - delta; }
+
+delete delta;
+init x = next_state;
+erase next_state;
+goto x;
+delete x;
 
 
 

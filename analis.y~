@@ -91,6 +91,12 @@ public:
 	{
 		return globals[number] == 1;
 	}
+	bool isGlobal(const char *name)
+	{
+		string str(name);
+		int num = innerNameToNumber(names[str]);
+		return isGlobal(num);
+	}
 	void makeGlobal(int number)
 	{
 		globals[number] = 1;
@@ -505,7 +511,7 @@ assign :	NAME ASSIGN expr SEMICOLON
 		{
 			if (mem.ifs.empty())
 			{
-				if (mem.isDefine($<string>1))
+				if (mem.isDefine($<string>1) || mem.isGlobal($<string>1))
 				{
 					cout << "lol";
 					string tmp = string($<string>1);
@@ -524,7 +530,8 @@ assign :	NAME ASSIGN expr SEMICOLON
 				}
 				else
 				{
-					mem.free_mem(tmp);
+					try { mem.free_mem(tmp); }
+					catch (int e) { Error::error(e); }
 					string *int_name = new string($<string>3);
 					mem.define(tmp, *int_name);	
 				}
