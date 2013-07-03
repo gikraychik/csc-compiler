@@ -562,6 +562,10 @@ assign :	NAME ASSIGN expr SEMICOLON
 			{
 				string tmp($<string>1);
 				string *int_name = new string(mem.getInnerName(tmp));  //memory leak
+				if (isN)
+				{
+					cout << exprNum; exprNum = 0;
+				}
 				asmr.move($<string>3, int_name->data());
 				if (!isV) { mem.free_cell($<string>3); }
 			}
@@ -727,7 +731,7 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 		{
 			asmr.cd($<string>3, $<string>5);
 			if (!isV) { mem.free_cell($<string>3); }
-			isV = false;
+			isV = false; isN = false;
 		}
 		/*| PRINT OBRACE NAME COMA NUMBER CBRACE SEMICOLON
 		{
@@ -748,21 +752,7 @@ goto :		GOTO expr SEMICOLON
 			isV = false; isN = false;
 		}
 		;
-globals:	INIT GLOBAL NAME ASSIGN expr SEMICOLON
-		{
-			string *ext_name = new string($<string>3);  //memory leak
-			string *int_name = new string($<string>5);  //memory leak
-			mem.define(*ext_name, *int_name);
-			mem.makeGlobal(*int_name);
-			/*string str($<string>3);
-			string *int_name;
-			try { int_name = new string(mem.alloc(str)); }  //memory leak
-			catch (int e) { Error::error(e); break; }
-			asmr.move($<string>5, int_name->data());
-			mem.free_cell($<string>5);
-			mem.makeGlobal(*int_name);*/
-		}
-		| INIT GLOBAL NAME SEMICOLON
+globals:	INIT GLOBAL NAME SEMICOLON
 		{
 			string str($<string>3);
 			string *int_name;
@@ -808,9 +798,8 @@ condition :	//IF OBRACE expr CBRACE block ELSE block
 		IF OBRACE expr
 		{
 			string tmp($<string>3);
-			tmp = string($<string>3);
 			string *int_name = new string(tmp.data());
-			string *new_mem;
+			string *new_mem;  //for stack
 			if (!isV)
 			{
 				new_mem = new string(int_name->data());
@@ -818,7 +807,7 @@ condition :	//IF OBRACE expr CBRACE block ELSE block
 			else
 			{			
 				new_mem = new string(mem.numberToInnerName(mem.alloc()));  //for stack
-				//asmr.move(int_name->data(), new_mem->data());  //may be should be returned
+				asmr.move(int_name->data(), new_mem->data());  //may be should be returned
 			}
 			if (mem.ifs.empty())
 			{
@@ -830,7 +819,7 @@ condition :	//IF OBRACE expr CBRACE block ELSE block
 				asmr._and(top->data(), int_name->data(), new_mem->data());
 				mem.ifs.push(new_mem);
 			}
-			isV = false;
+			isV = false; isN = false;
 		}
 		CBRACE block
 		{

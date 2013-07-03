@@ -3,7 +3,9 @@ define def2 as TMP20;
 init global g;
 
 label 1;
-init x;
-init y;
+init x = 2;
+init y = 3;
+init z;
+if (x == y) { z = 10; }
 
 goto g;
