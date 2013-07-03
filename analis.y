@@ -394,6 +394,10 @@ void yyerror(const char *s)
 Memory mem(30);
 Assembler asmr(&mem);
 bool isV = false;
+bool isN = false;
+int exprNumber = 0;
+const char *exprNum = 0;  //it prints
+const char *exprName = 0;
 
 void print(char c, int number)
 {
@@ -450,6 +454,12 @@ void inExpr(const char *&int_name1, const char *&int_name2, const char *&res)
 	}
 	int_name1 = var1;
 	int_name2 = var2;
+	if (isN)
+	{
+		cout << exprNum;
+		exprNum = 0;
+	}
+	isN = false;
 }
 
 int main()
@@ -515,26 +525,38 @@ assign :	NAME ASSIGN expr SEMICOLON
 				{
 					string tmp = string($<string>1);
 					string *int_name = new string(mem.getInnerName(tmp));  //memory leak
-					asmr.move($<string>3, int_name->data());
+					if (isN)
+					{
+						asmr.move(exprNumber, int_name->data());
+					}
+					else { asmr.move($<string>3, int_name->data()); }
 					if (!isV) { mem.free_cell($<string>3); }
-				}
-				else {
-				string tmp($<string>1);
-				if (isV)
-				{
-					tmp = string($<string>1);
-					string *int_name = new string(mem.getInnerName(tmp));  //memory leak
-					//cout << tmp << endl;
-					asmr.move($<string>3, int_name->data());
 				}
 				else
 				{
-					try { mem.free_mem(tmp); }
-					catch (int e) { Error::error(e); }
-					string *int_name = new string($<string>3);
-					mem.define(tmp, *int_name);	
+					string tmp($<string>1);
+					if (isV)
+					{
+						tmp = string($<string>1);
+						string *int_name = new string(mem.getInnerName(tmp));  //memory leak
+						asmr.move($<string>3, int_name->data());
+					}
+					else
+					{
+						if (isN)
+						{
+							string *int_name = new string(mem.getInnerName(tmp));  //memory leak
+							asmr.move(exprNumber, int_name->data());
+							mem.free_cell($<string>3);
+						}
+						else {
+						try { mem.free_mem(tmp); }
+						catch (int e) { Error::error(e); break; }
+						string *int_name = new string($<string>3);
+						mem.define(tmp, *int_name);
+						}
+					}
 				}
-				}  	//mem.free_cell($<string>3);
 			}
 			else
 			{
@@ -543,7 +565,7 @@ assign :	NAME ASSIGN expr SEMICOLON
 				asmr.move($<string>3, int_name->data());
 				if (!isV) { mem.free_cell($<string>3); }
 			}
-			isV = false;
+			isV = false; isN = false;
 		}
 		;
 expr :		int_expr
@@ -620,8 +642,16 @@ int_expr:	int_expr ADD int_expr
 		| NUMBER
 		{
 			string *str = new string(mem.numberToInnerName(mem.alloc()));  //memory leak
-			asmr.move($<number>1, str->data());
+			char *memory = (char *)malloc(33*sizeof(char));
+			string tmp = string("IMOVE(") + string(mem.itoa($<number>1, memory)) + string(", ") + string(str->data()) + string(")\n");			
+			free(memory);
+			if (exprNum != 0) { tmp = string(exprNum) + tmp; }
+			string *left = new string(tmp.data());  //memory leak
+			exprNum = left->data();  //memory leak
+			exprName = str->data();
+			//asmr.move($<number>1, str->data());
 			$<string>$ = str->data();
+			isN = true; exprNumber = $<number>1;
 		}
 		| NAME
 		{
@@ -636,8 +666,7 @@ int_expr:	int_expr ADD int_expr
 			string p = mem.getInnerName(str);
 			string s = p + string("$");
 			string *res = new string(s.data());  //memory leak
-			$<string>$ = res->data();
-			
+			$<string>$ = res->data();			
 		}
 		| OBRACE int_expr CBRACE
 		{
@@ -690,10 +719,6 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 		}
 		| PRINT OBRACE expr COMA NAME CBRACE SEMICOLON
 		{
-			/*if ($<number>5>4) { Error::error(9); break; }
-			char *tmp = (char *)malloc(33*sizeof(char));
-			string where = string("LED") + string(mem.itoa($<number>5, tmp));
-			free(tmp);*/
 			asmr.cd($<string>3, $<string>5);
 			if (!isV) { mem.free_cell($<string>3); }
 			isV = false;
@@ -708,9 +733,13 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 		;
 goto :		GOTO expr SEMICOLON
 		{
-			asmr.move($<string>2, "NETLIST_SELECT");
+			if (isN)
+			{
+				asmr.move(exprNumber, "NETLIST_SELECT");
+			}
+			else { asmr.move($<string>2, "NETLIST_SELECT"); }
 			if (!isV) { mem.free_cell($<string>2); }
-			isV = false;
+			isV = false; isN = false;
 		}
 		;
 globals:	INIT GLOBAL NAME ASSIGN expr SEMICOLON
