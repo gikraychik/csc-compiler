@@ -5,7 +5,5 @@ init global g;
 label 1;
 init x;
 init y;
-init z;
-def1 = 2 || 3 && g + x - 1;
 
-goto 1;
+goto g;

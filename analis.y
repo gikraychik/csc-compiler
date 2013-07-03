@@ -677,24 +677,30 @@ decl:		INIT NAME ASSIGN expr SEMICOLON
 		{
 			string *new_mem;
 			string str($<string>2);
-			if (isV)
+			if (isN)
 			{
-				try { new_mem = new string(mem.alloc(str)); }  //memory leak
-				catch (int e) { Error::error(e); break; }
-				asmr.move($<string>4, new_mem->data());	
-			}
-			else
-			{
+				cout << exprNum;
+				exprNum = 0;
 				string *ext_name = new string($<string>2);  //memory leak
 				string *int_name = new string($<string>4);  //memory leak
 				mem.define(*ext_name, *int_name);
 			}
-			isV = false;
-			/*string *new_mem;
-			try { new_mem = new string(mem.alloc(str)); }  //memory leak
-			catch (int e) { Error::error(e); break; }
-			asmr.move($<string>4, new_mem->data());
-			mem.free_cell($<string>4);*/
+			else
+			{
+				if (isV)
+				{
+					try { new_mem = new string(mem.alloc(str)); }  //memory leak
+					catch (int e) { Error::error(e); break; }
+					asmr.move($<string>4, new_mem->data());	
+				}
+				else
+				{
+					string *ext_name = new string($<string>2);  //memory leak
+					string *int_name = new string($<string>4);  //memory leak
+					mem.define(*ext_name, *int_name);
+				}
+			}
+			isV = false; isN = false;
 		}
 		| INIT NAME SEMICOLON
 		{
