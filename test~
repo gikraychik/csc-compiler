@@ -6,6 +6,6 @@ label 1;
 init x = 2;
 init y = 3;
 init z;
-if (x == y) { z = 10; }
+if (x == y) { z = 10; y = 20; }
 
 goto g;

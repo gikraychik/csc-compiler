@@ -68,7 +68,7 @@ Grammar
 
    35 print: PRINT OBRACE STRINGCONST CBRACE SEMICOLON
    36      | PRINT OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON
-   37      | PRINT OBRACE expr COMA NAME CBRACE SEMICOLON
+   37      | PRINT OBRACE NAME COMA NAME CBRACE SEMICOLON
 
    38 goto: GOTO expr SEMICOLON
 
@@ -162,7 +162,7 @@ command (58)
 assign (59)
     on left: 18, on right: 10
 expr (60)
-    on left: 19, on right: 18 33 37 38 46
+    on left: 19, on right: 18 33 38 46
 int_expr (61)
     on left: 20 21 22 23 24 25 26 27 28 29 30 31 32, on right: 19 20
     21 22 23 24 25 26 27 28 29 32
@@ -406,7 +406,7 @@ state 23
 
    35 print: PRINT . OBRACE STRINGCONST CBRACE SEMICOLON
    36      | PRINT . OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON
-   37      | PRINT . OBRACE expr COMA NAME CBRACE SEMICOLON
+   37      | PRINT . OBRACE NAME COMA NAME CBRACE SEMICOLON
 
     OBRACE  shift, and go to state 41
 
@@ -569,17 +569,11 @@ state 41
 
    35 print: PRINT OBRACE . STRINGCONST CBRACE SEMICOLON
    36      | PRINT OBRACE . SYMBOL COMA NUMBER CBRACE SEMICOLON
-   37      | PRINT OBRACE . expr COMA NAME CBRACE SEMICOLON
+   37      | PRINT OBRACE . NAME COMA NAME CBRACE SEMICOLON
 
-    NUMBER       shift, and go to state 47
-    NAME         shift, and go to state 53
-    STRINGCONST  shift, and go to state 58
-    OBRACE       shift, and go to state 49
-    SYMBOL       shift, and go to state 59
-    NOT          shift, and go to state 50
-
-    expr      go to state 60
-    int_expr  go to state 52
+    NAME         shift, and go to state 58
+    STRINGCONST  shift, and go to state 59
+    SYMBOL       shift, and go to state 60
 
 
 state 42
@@ -747,21 +741,21 @@ state 57
 
 state 58
 
-   35 print: PRINT OBRACE STRINGCONST . CBRACE SEMICOLON
+   37 print: PRINT OBRACE NAME . COMA NAME CBRACE SEMICOLON
 
-    CBRACE  shift, and go to state 79
+    COMA  shift, and go to state 79
 
 
 state 59
 
-   36 print: PRINT OBRACE SYMBOL . COMA NUMBER CBRACE SEMICOLON
+   35 print: PRINT OBRACE STRINGCONST . CBRACE SEMICOLON
 
-    COMA  shift, and go to state 80
+    CBRACE  shift, and go to state 80
 
 
 state 60
 
-   37 print: PRINT OBRACE expr . COMA NAME CBRACE SEMICOLON
+   36 print: PRINT OBRACE SYMBOL . COMA NUMBER CBRACE SEMICOLON
 
     COMA  shift, and go to state 81
 
@@ -966,23 +960,23 @@ state 78
 
 state 79
 
-   35 print: PRINT OBRACE STRINGCONST CBRACE . SEMICOLON
+   37 print: PRINT OBRACE NAME COMA . NAME CBRACE SEMICOLON
 
-    SEMICOLON  shift, and go to state 96
+    NAME  shift, and go to state 96
 
 
 state 80
 
-   36 print: PRINT OBRACE SYMBOL COMA . NUMBER CBRACE SEMICOLON
+   35 print: PRINT OBRACE STRINGCONST CBRACE . SEMICOLON
 
-    NUMBER  shift, and go to state 97
+    SEMICOLON  shift, and go to state 97
 
 
 state 81
 
-   37 print: PRINT OBRACE expr COMA . NAME CBRACE SEMICOLON
+   36 print: PRINT OBRACE SYMBOL COMA . NUMBER CBRACE SEMICOLON
 
-    NAME  shift, and go to state 98
+    NUMBER  shift, and go to state 98
 
 
 state 82
@@ -1204,21 +1198,21 @@ state 95
 
 state 96
 
+   37 print: PRINT OBRACE NAME COMA NAME . CBRACE SEMICOLON
+
+    CBRACE  shift, and go to state 102
+
+
+state 97
+
    35 print: PRINT OBRACE STRINGCONST CBRACE SEMICOLON .
 
     $default  reduce using rule 35 (print)
 
 
-state 97
-
-   36 print: PRINT OBRACE SYMBOL COMA NUMBER . CBRACE SEMICOLON
-
-    CBRACE  shift, and go to state 102
-
-
 state 98
 
-   37 print: PRINT OBRACE expr COMA NAME . CBRACE SEMICOLON
+   36 print: PRINT OBRACE SYMBOL COMA NUMBER . CBRACE SEMICOLON
 
     CBRACE  shift, and go to state 103
 
@@ -1263,14 +1257,14 @@ state 101
 
 state 102
 
-   36 print: PRINT OBRACE SYMBOL COMA NUMBER CBRACE . SEMICOLON
+   37 print: PRINT OBRACE NAME COMA NAME CBRACE . SEMICOLON
 
     SEMICOLON  shift, and go to state 106
 
 
 state 103
 
-   37 print: PRINT OBRACE expr COMA NAME CBRACE . SEMICOLON
+   36 print: PRINT OBRACE SYMBOL COMA NUMBER CBRACE . SEMICOLON
 
     SEMICOLON  shift, and go to state 107
 
@@ -1309,16 +1303,16 @@ state 105
 
 state 106
 
-   36 print: PRINT OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON .
+   37 print: PRINT OBRACE NAME COMA NAME CBRACE SEMICOLON .
 
-    $default  reduce using rule 36 (print)
+    $default  reduce using rule 37 (print)
 
 
 state 107
 
-   37 print: PRINT OBRACE expr COMA NAME CBRACE SEMICOLON .
+   36 print: PRINT OBRACE SYMBOL COMA NUMBER CBRACE SEMICOLON .
 
-    $default  reduce using rule 37 (print)
+    $default  reduce using rule 36 (print)
 
 
 state 108

@@ -5,7 +5,7 @@ init global g;
 label 1;
 init x = 2;
 init y = 3;
-init z;
-if (x == y) { z = 10; y = 20; }
+init z = x + y;
+print(z, LED0);
 
 goto g;

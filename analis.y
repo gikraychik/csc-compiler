@@ -569,7 +569,7 @@ assign :	NAME ASSIGN expr SEMICOLON
 				asmr.move($<string>3, int_name->data());
 				if (!isV) { mem.free_cell($<string>3); }
 			}
-			isV = false; isN = false;
+			isV = false; isN = false; exprNum = 0;
 		}
 		;
 expr :		int_expr
@@ -684,7 +684,7 @@ decl:		INIT NAME ASSIGN expr SEMICOLON
 			if (isN)
 			{
 				cout << exprNum;
-				exprNum = 0;
+				//exprNum = 0;
 				string *ext_name = new string($<string>2);  //memory leak
 				string *int_name = new string($<string>4);  //memory leak
 				mem.define(*ext_name, *int_name);
@@ -704,7 +704,7 @@ decl:		INIT NAME ASSIGN expr SEMICOLON
 					mem.define(*ext_name, *int_name);
 				}
 			}
-			isV = false; isN = false;
+			isV = false; isN = false; exprNum = 0;
 		}
 		| INIT NAME SEMICOLON
 		{
@@ -727,11 +727,15 @@ print:		PRINT OBRACE STRINGCONST CBRACE SEMICOLON
 		{
 			print(*($<string>3), $<number>5);
 		}
-		| PRINT OBRACE expr COMA NAME CBRACE SEMICOLON
+		| PRINT OBRACE NAME COMA NAME CBRACE SEMICOLON
 		{
-			asmr.cd($<string>3, $<string>5);
-			if (!isV) { mem.free_cell($<string>3); }
-			isV = false; isN = false;
+			string *int_name;
+			string ext_name($<string>3);
+			try { int_name = new string(mem.getInnerName(ext_name)); }  //memory leak
+			catch (int e) { Error::error(e); break; }
+			asmr.cd(int_name->data(), $<string>5);
+			//if (!isV) { mem.free_cell($<string>3); }
+			//isV = false; isN = false;
 		}
 		/*| PRINT OBRACE NAME COMA NUMBER CBRACE SEMICOLON
 		{
@@ -749,7 +753,7 @@ goto :		GOTO expr SEMICOLON
 			}
 			else { asmr.move($<string>2, "NETLIST_SELECT"); }
 			if (!isV) { mem.free_cell($<string>2); }
-			isV = false; isN = false;
+			isV = false; isN = false; exprNum = 0;
 		}
 		;
 globals:	INIT GLOBAL NAME SEMICOLON
@@ -819,7 +823,7 @@ condition :	//IF OBRACE expr CBRACE block ELSE block
 				asmr._and(top->data(), int_name->data(), new_mem->data());
 				mem.ifs.push(new_mem);
 			}
-			isV = false; isN = false;
+			isV = false; isN = false; exprNum = 0;
 		}
 		CBRACE block
 		{
