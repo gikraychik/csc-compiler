@@ -44,6 +44,7 @@ s1 = 1; ind2 = 1; ind3 = 1; isStand = 1;
 timerMSec = 62500;
 standTimer = 750;
 adminTimer = 750;
+timer = 30000;
 maxDes = 28; minDes = 20;
 init x = t3 + t4 + isStand + checkSum == 12580;
 x = x ? 1 : 2;
@@ -84,7 +85,8 @@ define y as TMP24;
 y = 4;
 erase y;
 init x = standTimer == 0;
-x = x ? 5 : 10;
+timer = 30000;
+x = x ? 5 : 9;
 if (standTimer == 0) { standTimer = 750; }
 if (x == 5) { s1 = 1; ind3 = 1; }
 goto x;
@@ -118,7 +120,7 @@ delete output;
 define after as TMP24;
 after = 6;
 erase after;
-goto 10;
+goto 9;
 
 label 6;
 init outside;
@@ -161,30 +163,21 @@ delete tmp; delete tmp1;
 if (rele2 == 0) { timer = 30000; }
 if (timer > 0) { rele2 = 0; rele3 = 0; }
 init newTmp = (rele2 == 1) || (rele4 == 1);
-if (newTmp) { ind4 = 1; }
-if (!newTmp) { ind4 = 0; }
+ind4 = newTmp ? 1 : 0;
+ind5 = rele3 ? 1 : 0;
 delete newTmp;
-if (rele3 == 1) { ind5 = 1; }
-if (rele3 == 0) { ind5 = 0; }
 
 s2 = rele2; s3 = rele3; s4 = rele4;
 delete rele2; delete rele3; delete rele4;
 delete inside;
 delete desired;
 
-init v;
-if (outside >= 38) { v = 4; }
-if ((outside >= 36) && (outside < 38)) { v = 5; }
-if ((outside >= 34) && (outside < 36)) { v = 6; }
-if ((outside >= 32) && (outside < 34)) { v = 7; }
-if ((outside >= 30) && (outside < 32)) { v = 8; }
-if ((outside >= 20) && (outside < 30)) { v = 9; }
-if (outside < 20) { v = 10; }
-voltage = v;
-delete v;
+define param as TMP24;
+param = outside;
+erase param;
 delete outside;
 
-goto 7;
+goto 10;
 
 label 7;
 define des as TMP25;
@@ -193,34 +186,40 @@ init x = !enter;
 init d = down;
 init u = up;
 init v = video;
+init v0 = video == 0;
+init v1 = video == 1;
+init v2 = video == 2;
+init v3 = video == 3;
 if (upStatus && downStatus) { u = 0; d = 0; }
-init y = (video == 0) && x;
+init y = v0 && x;
 if (y && d) { v = 2; }
 if (y && u) { v = 1; }
-y = (video == 1) && x;
+y = v1 && x;
 if (y && u) { v = 2; }
 if (y && d) { v = 0; }
-y = (video == 2) && x;
+y = v2 && x;
 if (y && u) { v = 0; }
 if (y && d) { v = 1; }
 
 x = !x;
-if ((video == 2) && x) { v = 3; }
-y = (video == 3) && x;
+if (v2 && x) { v = 3; }
+y = v3 && x;
 init curDes = des;
 if ((y && u) && (curDes < maxDes)) { curDes = curDes + 1; }
 if ((y && d) && (curDes > minDes)) { curDes = curDes - 1; }
-if (!x && (video == 3)) { v = 2; }
+if (!x && v3) { v = 2; }
 des = curDes;
 delete curDes;
 
 erase des;
 delete x; delete y; delete u; delete d;
+delete v0; delete v1; delete v2; delete v3;
 video = v; delete v;
 init wasIn = 0;
-if ((adminTimer == 0) && (minDes == 20)) { wasIn = 1; minDes = 10; maxDes = 30; }
-if ((adminTimer == 0) && (minDes == 10) && !wasIn) { minDes = 20; maxDes = 28; }
-if (adminTimer == 0) { adminTimer = 750; }
+init ready = adminTimer == 0;
+if (ready && (minDes == 20)) { wasIn = 1; minDes = 10; maxDes = 30; }
+if (ready && (minDes == 10) && !wasIn) { minDes = 20; maxDes = 28; }
+if (ready) { adminTimer = 750; }
 delete wasIn;
 init next = 8;
 if (standTimer == 0)
@@ -241,11 +240,6 @@ erase afterState;
 goto 3;
 
 label 9;
-define y as TMP25;
-erase y;
-goto 5;
-
-label 10;
 define next_state as TMP24;
 init time = 62500;
 init delta = time - timerMSec;
@@ -269,3 +263,16 @@ erase next_state;
 goto x;
 delete x;
 
+label 10;
+define outside as TMP24;
+init v = 8;
+if (outside >= 38) { v = 4; }
+if ((outside >= 36) && (outside < 38)) { v = 5; }
+if ((outside >= 34) && (outside < 36)) { v = 6; }
+if ((outside >= 32) && (outside < 34)) { v = 7; }
+if ((outside >= 20) && (outside < 30)) { v = 9; }
+if (outside < 20) { v = 10; }
+voltage = v;
+delete v;
+erase outside;
+goto 7;
