@@ -108,7 +108,7 @@ init error = error1 || error2;
 define x1 as TMP21;
 define x2 as TMP22;
 define x3 as TMP23;
-if (error1 || error2) { x1 = 158; x2 = 10; x3 = 10; }
+if (error) { x1 = 158; x2 = 10; x3 = 10; }
 delete error1; delete error2; delete error;
 led1 = x1; led2 = x2; led3 = x3;
 erase x1; erase x2; erase x3;
@@ -123,15 +123,13 @@ goto 10;
 label 6;
 init outside;
 init inside;
-init tmp1 = (t1 - oldt1 > 5);
-init tmp2 = (oldt1 - t1 > 5);
-if (tmp1 || tmp2) { outside = oldt1; }
-if (!tmp1 && !tmp2) { outside = t1; oldt1 = t1; }
-tmp1 = (t2 - oldt2 > 5);
-tmp2 = (oldt2 - t2 > 5);
-if (tmp1 || tmp2) { inside = oldt2; }
-if (!tmp1 && !tmp2) { inside = t2; oldt2 = t2; }
-delete tmp1; delete tmp2;
+init tmp1 = (t1 - oldt1 > 5) || (oldt1 - t1 > 5);
+if (tmp1) { outside = oldt1; }
+if (!tmp1) { outside = t1; oldt1 = t1; }
+tmp1 = (t2 - oldt2 > 5) || (oldt2 - t2 > 5);
+if (tmp1) { inside = oldt2; }
+if (!tmp1) { inside = t2; oldt2 = t2; }
+delete tmp1;
 if ((t1Last > 60) || (outside < 0 - 40) || (outside > 50)) { outside = 24; }
 if ((t2Last > 60) || (inside < 0-40) || (inside > 50)) { inside = 24; }
 
@@ -162,17 +160,30 @@ delete tmp; delete tmp1;
 
 if (rele2 == 0) { timer = 30000; }
 if (timer > 0) { rele2 = 0; rele3 = 0; }
-
-if ((rele2 == 1) || (rele4 == 1)) { ind4 = 1; }
-if (!((rele2 == 1) || (rele4 == 1))) { ind4 = 0; }
+init newTmp = (rele2 == 1) || (rele4 == 1);
+if (newTmp) { ind4 = 1; }
+if (!newTmp) { ind4 = 0; }
+delete newTmp;
 if (rele3 == 1) { ind5 = 1; }
 if (rele3 == 0) { ind5 = 0; }
 
 s2 = rele2; s3 = rele3; s4 = rele4;
 delete rele2; delete rele3; delete rele4;
 delete inside;
-delete outside;
 delete desired;
+
+init v;
+if (outside >= 38) { v = 4; }
+if ((outside >= 36) && (outside < 38)) { v = 5; }
+if ((outside >= 34) && (outside < 36)) { v = 6; }
+if ((outside >= 32) && (outside < 34)) { v = 7; }
+if ((outside >= 30) && (outside < 32)) { v = 8; }
+if ((outside >= 20) && (outside < 30)) { v = 9; }
+if (outside < 20) { v = 10; }
+voltage = v;
+delete v;
+delete outside;
+
 goto 7;
 
 label 7;
