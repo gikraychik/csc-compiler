@@ -465,7 +465,7 @@ void inExpr(const char *&int_name1, const char *&int_name2, const char *&res)
 int main()
 {
 	yyparse();
-	mem.print();
+	//mem.print();
 }
 %}
 
